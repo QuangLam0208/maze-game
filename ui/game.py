@@ -186,48 +186,9 @@ class MazeGame:
             desc_text = self.small_font.render(algorithm["desc"], True, desc_color)
             self.screen.blit(desc_text, (start_x + 10, y + 25))
     
-    #render: 3 thuật toán con mỗi nhóm -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
-    def draw_controls(self):
-        """Vẽ các nút điều khiển"""
-        button_width = 80
-        button_height = 35
-        start_x = 20
-        start_y = 720
-        spacing = 10
-        
-        buttons = [
-            {"text": "Bắt đầu", "color": GREEN, "action": "start"},
-            {"text": "Dừng", "color": RED, "action": "stop"},
-            {"text": "Reset", "color": GRAY, "action": "reset"},
-            {"text": "Maze mới", "color": BLUE, "action": "new_maze"}
-        ]
-        
-        for i, button in enumerate(buttons):
-            x = start_x + i * (button_width + spacing)
-            button_rect = pygame.Rect(x, start_y, button_width, button_height)
-            
-            # Disable start button when running
-            if button["action"] == "start" and self.is_running:
-                color = GRAY
-            else:
-                color = button["color"]
-            
-            pygame.draw.rect(self.screen, color, button_rect)
-            pygame.draw.rect(self.screen, BLACK, button_rect, 2)
-            
-            text = self.small_font.render(button["text"], True, WHITE)
-            text_rect = text.get_rect(center=button_rect.center)
-            self.screen.blit(text, text_rect)
+
     
-    # render
-
-
-
-
-
-
-
-
+    
     # --- Event Handling & Algorithms ---
     def handle_click(self, pos):
         """Xử lý click chuột"""
@@ -308,9 +269,7 @@ class MazeGame:
         self.screen.fill(WHITE)
         
         # Draw all UI elements
-        self.renderer.draw_group_buttons()  # Gọi hàm vẽ group buttons từ renderer
         self.draw_algorithm_buttons()
-        self.draw_controls()
         self.renderer.draw_all()
         
         pygame.display.flip()
