@@ -123,3 +123,138 @@ class Renderer:
         info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
         text = self.font.render(info_text, True, current_group["color"])
         self.screen.blit(text, (info_x, info_y))
+
+    def draw_controls(self):
+        """Vẽ các nút điều khiển"""
+        button_width = 80
+        button_height = 35
+        start_x = 20
+        start_y = 720
+        spacing = 10
+        
+        buttons = [
+            {"text": "Bắt đầu", "color": GREEN, "action": "start"},
+            {"text": "Dừng", "color": RED, "action": "stop"},
+            {"text": "Reset", "color": GRAY, "action": "reset"},
+            {"text": "Maze mới", "color": BLUE, "action": "new_maze"}
+        ]
+        
+        for i, button in enumerate(buttons):
+            x = start_x + i * (button_width + spacing)
+            button_rect = pygame.Rect(x, start_y, button_width, button_height)
+            
+            # Disable start button when running
+            if button["action"] == "start" and self.game.is_running:
+                color = GRAY
+            else:
+                color = button["color"]
+            
+            pygame.draw.rect(self.screen, color, button_rect)
+            pygame.draw.rect(self.screen, BLACK, button_rect, 2)
+            
+            text = self.small_font.render(button["text"], True, WHITE)
+            text_rect = text.get_rect(center=button_rect.center)
+            self.screen.blit(text, text_rect)
+
+    def draw_stats(self):
+        """Vẽ thống kê"""
+        stats_x = 20
+        stats_y = 250
+        
+        # Background
+        stats_rect = pygame.Rect(stats_x, stats_y, 250, 120)
+        pygame.draw.rect(self.screen, LIGHT_GRAY, stats_rect)
+        pygame.draw.rect(self.screen, BLACK, stats_rect, 2)
+        
+        # Title
+        title = self.font.render("📊 Thống kê", True, BLACK)
+        self.screen.blit(title, (stats_x + 10, stats_y + 10))
+        
+        # Stats info
+        stats_info = [
+            f"Nodes đã thăm: {self.game.stats['nodes_visited']}",
+            f"Độ dài đường đi: {self.game.stats['path_length']}",
+            f"Thời gian: {self.game.stats['time']:.0f}ms",
+            f"Trạng thái: {'Đang chạy' if self.game.is_running else 'Dừng'}"
+        ]
+        
+        for i, info in enumerate(stats_info):
+            text = self.small_font.render(info, True, BLACK)
+            self.screen.blit(text, (stats_x + 10, stats_y + 35 + i * 18))
+
+    def draw_maze(self):
+        """Vẽ maze"""
+        # Background maze
+        maze_bg = pygame.Rect(MAZE_OFFSET_X - 5, MAZE_OFFSET_Y - 5, 
+                            self.game.MAZE_WIDTH + 10, self.game.MAZE_HEIGHT + 10)
+        pygame.draw.rect(self.screen, BLACK, maze_bg)
+        
+        for i in range(self.game.MAZE_SIZE):
+            for j in range(self.game.MAZE_SIZE):
+                x = MAZE_OFFSET_X + j * self.game.CELL_SIZE
+                y = MAZE_OFFSET_Y + i * self.game.CELL_SIZE
+                rect = pygame.Rect(x, y, self.game.CELL_SIZE, self.game.CELL_SIZE)
+                
+                # Determine cell color
+                if self.game.maze[i][j] == 1:  # Wall
+                    color = BLACK
+                elif i == 0 and j == 0:  # Start
+                    color = GREEN
+                elif i == self.game.MAZE_SIZE - 1 and j == self.game.MAZE_SIZE - 1:  # Goal
+                    color = RED
+                elif self.game.current_node and self.game.current_node == (i, j):  # Current node
+                    color = PINK
+                elif (i, j) in self.game.path:  # Path
+                    color = YELLOW
+                elif (i, j) in self.game.visited:  # Visited
+                    color = LIGHT_BLUE
+                else:  # Empty
+                    color = WHITE
+                
+                pygame.draw.rect(self.screen, color, rect)
+                if color != BLACK:  # Don't draw border on walls
+                    pygame.draw.rect(self.screen, DARK_GRAY, rect, 1)
+
+    def draw_legend(self):
+        """Vẽ chú thích"""
+        legend_x = MAZE_OFFSET_X + self.game.MAZE_WIDTH + 20
+        legend_y = MAZE_OFFSET_Y
+        
+        legend_rect = pygame.Rect(legend_x, legend_y, 180, 200)
+        pygame.draw.rect(self.screen, WHITE, legend_rect)
+        pygame.draw.rect(self.screen, BLACK, legend_rect, 2)
+        
+        title = self.font.render("🔍 Chú thích", True, BLACK)
+        self.screen.blit(title, (legend_x + 10, legend_y + 10))
+        
+        legend_items = [
+            ("Start", GREEN),
+            ("Goal", RED),
+            ("Tường", BLACK),
+            ("Đã thăm", LIGHT_BLUE),
+            ("Đường đi", YELLOW),
+            ("Hiện tại", PINK),
+            ("Trống", WHITE)
+        ]
+        
+        for i, (label, color) in enumerate(legend_items):
+            y = legend_y + 40 + i * 22
+            
+            # Color box
+            color_rect = pygame.Rect(legend_x + 15, y, 15, 15)
+            pygame.draw.rect(self.screen, color, color_rect)
+            pygame.draw.rect(self.screen, BLACK, color_rect, 1)
+            
+            # Label
+            label_text = self.small_font.render(label, True, BLACK)
+            self.screen.blit(label_text, (legend_x + 40, y + 2))
+
+    def draw_all(self):
+        """Vẽ tất cả các thành phần giao diện"""
+        self.draw_group_buttons()
+        self.draw_algorithm_buttons()
+        self.draw_controls()
+        self.draw_stats()
+        self.draw_current_algorithm_info()
+        self.draw_maze()
+        self.draw_legend()
