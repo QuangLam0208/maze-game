@@ -3,6 +3,8 @@ import sys
 import time
 import random
 from collections import deque
+from ui.renderer import Renderer
+
 
 from algorithms.bfs import run_bfs
 from core.maze_generator import generate_maze
@@ -43,6 +45,9 @@ class MazeGame:
         self.font = pygame.font.Font(None, 20)
         self.title_font = pygame.font.Font(None, 28)
         self.small_font = pygame.font.Font(None, 16)
+        
+        self.renderer = Renderer(self.screen, self)
+
 
         # Algorithm groups: cái này add vào chung với hàm render 6 nhóm thuật toán ui/renderer.py
         self.algorithm_groups = [
@@ -116,95 +121,7 @@ class MazeGame:
         self.maze, state = generate_maze(MAZE_SIZE)
         self._apply_state(state)
 
-    def _apply_state(self, state):
-        """Áp state vào game"""
-        self.visited = state["visited"]
-        self.path = state["path"]
-        self.current_node = state["current_node"]
-        self.is_running = state["is_running"]
-        self.stats = state["stats"]
-
-    # render: 6 nhóm thuật toán -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
-    def draw_group_buttons(self):
-        """Vẽ 6 nhóm thuật toán ở góc trên trái (2x3)"""
-        button_width = 120
-        button_height = 50
-        start_x = 20
-        start_y = 20
-        spacing = 10
-        
-        for i, group in enumerate(self.algorithm_groups):
-            # Tính vị trí button (2 cột, 3 hàng)
-            col = i % 2
-            row = i // 2
-            x = start_x + col * (button_width + spacing)
-            y = start_y + row * (button_height + spacing)
-            
-            # Vẽ button
-            button_rect = pygame.Rect(x, y, button_width, button_height)
-            
-            # Màu button
-            if self.selected_group == i:
-                pygame.draw.rect(self.screen, group["color"], button_rect)
-                pygame.draw.rect(self.screen, BLACK, button_rect, 3)
-                text_color = WHITE
-            else:
-                pygame.draw.rect(self.screen, LIGHT_GRAY, button_rect)
-                pygame.draw.rect(self.screen, DARK_GRAY, button_rect, 2)
-                text_color = BLACK
-            
-            # Vẽ text (có thể có 2 dòng)
-            lines = group["name"].split('\n')
-            for j, line in enumerate(lines):
-                text = self.font.render(line, True, text_color)
-                text_rect = text.get_rect()
-                text_x = x + (button_width - text_rect.width) // 2
-                text_y = y + (button_height - len(lines) * 20) // 2 + j * 20
-                self.screen.blit(text, (text_x, text_y))
-    
-    # render: 3 thuật toán con mỗi nhóm -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
-    def draw_algorithm_buttons(self):
-        """Vẽ 3 thuật toán con ở góc dưới trái"""
-        if self.selected_group < 0 or self.selected_group >= len(self.algorithm_groups):
-            return
-        
-        button_width = 250
-        button_height = 60
-        start_x = 20
-        start_y = 420  # Dưới các button nhóm
-        spacing = 5
-        
-        current_group = self.algorithm_groups[self.selected_group]
-        
-        # Title cho nhóm được chọn
-        title_text = self.font.render(f"Nhóm: {current_group['name'].replace(chr(10), ' ')}", True, current_group["color"])
-        self.screen.blit(title_text, (start_x, start_y - 30))
-        
-        for i, algorithm in enumerate(current_group["algorithms"]):
-            y = start_y + i * (button_height + spacing)
-            button_rect = pygame.Rect(start_x, y, button_width, button_height)
-            
-            # Màu button
-            if self.selected_algorithm == i:
-                pygame.draw.rect(self.screen, current_group["color"], button_rect)
-                pygame.draw.rect(self.screen, BLACK, button_rect, 3)
-                text_color = WHITE
-                desc_color = WHITE
-            else:
-                pygame.draw.rect(self.screen, WHITE, button_rect)
-                pygame.draw.rect(self.screen, current_group["color"], button_rect, 2)
-                text_color = current_group["color"]
-                desc_color = DARK_GRAY
-            
-            # Vẽ tên thuật toán
-            name_text = self.small_font.render(algorithm["name"], True, text_color)
-            self.screen.blit(name_text, (start_x + 10, y + 8))
-            
-            # Vẽ mô tả
-            desc_text = self.small_font.render(algorithm["desc"], True, desc_color)
-            self.screen.blit(desc_text, (start_x + 10, y + 25))
-    
-    #render: 3 thuật toán con mỗi nhóm -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
+    #render: nút điều khiển -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
     def draw_controls(self):
         """Vẽ các nút điều khiển"""
         button_width = 80
@@ -237,7 +154,7 @@ class MazeGame:
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
     
-    # render
+    #render: thống kê -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
     def draw_stats(self):
         """Vẽ thống kê"""
         stats_x = 20
@@ -264,7 +181,7 @@ class MazeGame:
             text = self.small_font.render(info, True, BLACK)
             self.screen.blit(text, (stats_x + 10, stats_y + 35 + i * 18))
     
-    # render
+    #render: mê cung -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
     def draw_maze(self):
         """Vẽ maze"""
         # Background maze
@@ -297,7 +214,7 @@ class MazeGame:
                 if color != BLACK:  # Don't draw border on walls
                     pygame.draw.rect(self.screen, DARK_GRAY, rect, 1)
     
-    # render
+    # render: chú thích -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
     def draw_legend(self):
         """Vẽ chú thích"""
         legend_x = MAZE_OFFSET_X + MAZE_WIDTH + 20
@@ -330,20 +247,7 @@ class MazeGame:
             
             # Label
             label_text = self.small_font.render(label, True, BLACK)
-            self.screen.blit(label_text, (legend_x + 40, y + 2))
-    
-    # render
-    def draw_current_algorithm_info(self):
-        """Hiển thị thông tin thuật toán hiện tại"""
-        info_x = MAZE_OFFSET_X
-        info_y = MAZE_OFFSET_Y - 40
-        
-        current_group = self.algorithm_groups[self.selected_group]
-        current_alg = current_group["algorithms"][self.selected_algorithm]
-        
-        info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
-        text = self.font.render(info_text, True, current_group["color"])
-        self.screen.blit(text, (info_x, info_y))
+            self.screen.blit(label_text, (legend_x + 40, y + 2)
 
     # --- Event Handling & Algorithms ---
     def handle_click(self, pos):
@@ -428,11 +332,11 @@ class MazeGame:
         self.screen.fill(WHITE)
         
         # Draw all UI elements
-        self.draw_group_buttons()
-        self.draw_algorithm_buttons()
+        self.renderer.draw_group_buttons()
+        self.renderer.draw_algorithm_buttons()
         self.draw_controls()
         self.draw_stats()
-        self.draw_current_algorithm_info()
+        self.renderer.draw_current_algorithm_info()
         self.draw_maze()
         self.draw_legend()
         
