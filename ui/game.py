@@ -46,6 +46,14 @@ class MazeGame:
         self.title_font = pygame.font.Font(None, 28)
         self.small_font = pygame.font.Font(None, 16)
         
+        # Add maze dimensions as instance attributes
+        self.MAZE_SIZE = MAZE_SIZE
+        self.MAZE_WIDTH = MAZE_WIDTH
+        self.MAZE_HEIGHT = MAZE_HEIGHT
+        self.CELL_SIZE = CELL_SIZE
+        self.MAZE_OFFSET_X = MAZE_OFFSET_X
+        self.MAZE_OFFSET_Y = MAZE_OFFSET_Y
+        
         self.renderer = Renderer(self.screen, self)
 
 
@@ -122,6 +130,16 @@ class MazeGame:
         self._apply_state(state)
 
     # --- Event Handling & Algorithms ---
+    def _apply_state(self, state):
+        """Áp dụng trạng thái cho mê cung"""
+        self.start = state.get('start', (0, 0))
+        self.end = state.get('end', (MAZE_SIZE-1, MAZE_SIZE-1))
+        self.visited = set()
+        self.path = []
+        self.current_node = None
+        self.is_running = False
+        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+
     def handle_click(self, pos):
         """Xử lý click chuột"""
         # Check group buttons (2x3 grid)

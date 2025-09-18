@@ -19,7 +19,12 @@ LIGHT_BLUE = (173, 216, 230)
 # Maze constants để hiển thị info
 MAZE_OFFSET_X = 400
 MAZE_OFFSET_Y = 100
-
+MAZE_SIZE = 25
+CELL_SIZE = 20
+MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
+MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
+MAZE_OFFSET_X = 400
+MAZE_OFFSET_Y = 100
 
 class Renderer:
     def __init__(self, screen, game):
