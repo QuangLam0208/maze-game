@@ -5,6 +5,7 @@ import random
 from collections import deque
 
 from algorithms.bfs import run_bfs
+from core.maze_generator import generate_maze
 
 # Constants
 WINDOW_WIDTH = 1400
@@ -112,32 +113,16 @@ class MazeGame:
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
         self.start_time = 0
 
-        self.generate_maze()
+        self.maze, state = generate_maze(MAZE_SIZE)
+        self._apply_state(state)
 
-
-    # Có thể tách ra file riêng ??? .core/maze_generator.py
-    def generate_maze(self):
-        """Tạo maze ngẫu nhiên"""
-        self.maze = [[0 for _ in range(MAZE_SIZE)] for _ in range(MAZE_SIZE)]
-
-        # Tạo tường ngẫu nhiên
-        for i in range(MAZE_SIZE):
-            for j in range(MAZE_SIZE):
-                if random.random() < 0.3 and not (i == 0 and j == 0) and not (i == MAZE_SIZE-1 and j == MAZE_SIZE-1):
-                    self.maze[i][j] = 1  # Tường
-
-        self.reset_pathfinding()
-
-
-    # Có thể tách ra file riêng ??? .core/path_finding.py
-    def reset_pathfinding(self):
-        """Reset trạng thái tìm đường"""
-        self.visited = set()
-        self.path = []
-        self.current_node = None
-        self.is_running = False
-        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
-
+    def _apply_state(self, state):
+        """Áp state vào game"""
+        self.visited = state["visited"]
+        self.path = state["path"]
+        self.current_node = state["current_node"]
+        self.is_running = state["is_running"]
+        self.stats = state["stats"]
 
     # render: 6 nhóm thuật toán -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
     def draw_group_buttons(self):
@@ -360,12 +345,6 @@ class MazeGame:
         text = self.font.render(info_text, True, current_group["color"])
         self.screen.blit(text, (info_x, info_y))
 
-
-
-
-
-
-
     # --- Event Handling & Algorithms ---
     def handle_click(self, pos):
         """Xử lý click chuột"""
@@ -422,9 +401,11 @@ class MazeGame:
                 elif action == "stop":
                     self.is_running = False
                 elif action == "reset":
-                    self.reset_pathfinding()
+                    self.maze, state = generate_maze(MAZE_SIZE)
+                    self._apply_state(state)
                 elif action == "new_maze":
-                    self.generate_maze()
+                    self.maze, state = generate_maze(MAZE_SIZE)
+                    self._apply_state(state)
                 return
 
     def start_algorithm(self):
