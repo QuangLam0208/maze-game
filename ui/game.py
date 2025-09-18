@@ -143,43 +143,6 @@ class MazeGame:
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
 
 
-    # render: 6 nhóm thuật toán -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
-    def draw_group_buttons(self):
-        """Vẽ 6 nhóm thuật toán ở góc trên trái (2x3)"""
-        button_width = 120
-        button_height = 50
-        start_x = 20
-        start_y = 20
-        spacing = 10
-        
-        for i, group in enumerate(self.algorithm_groups):
-            # Tính vị trí button (2 cột, 3 hàng)
-            col = i % 2
-            row = i // 2
-            x = start_x + col * (button_width + spacing)
-            y = start_y + row * (button_height + spacing)
-            
-            # Vẽ button
-            button_rect = pygame.Rect(x, y, button_width, button_height)
-            
-            # Màu button
-            if self.selected_group == i:
-                pygame.draw.rect(self.screen, group["color"], button_rect)
-                pygame.draw.rect(self.screen, BLACK, button_rect, 3)
-                text_color = WHITE
-            else:
-                pygame.draw.rect(self.screen, LIGHT_GRAY, button_rect)
-                pygame.draw.rect(self.screen, DARK_GRAY, button_rect, 2)
-                text_color = BLACK
-            
-            # Vẽ text (có thể có 2 dòng)
-            lines = group["name"].split('\n')
-            for j, line in enumerate(lines):
-                text = self.font.render(line, True, text_color)
-                text_rect = text.get_rect()
-                text_x = x + (button_width - text_rect.width) // 2
-                text_y = y + (button_height - len(lines) * 20) // 2 + j * 20
-                self.screen.blit(text, (text_x, text_y))
     
     # render: 3 thuật toán con mỗi nhóm -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
     def draw_algorithm_buttons(self):
@@ -342,11 +305,10 @@ class MazeGame:
         run_bfs(self)
 
     def draw_frame(self):
-        """Vẽ một frame hoàn chỉnh"""
         self.screen.fill(WHITE)
         
         # Draw all UI elements
-        self.draw_group_buttons()
+        self.renderer.draw_group_buttons()  # Gọi hàm vẽ group buttons từ renderer
         self.draw_algorithm_buttons()
         self.draw_controls()
         self.renderer.draw_all()
