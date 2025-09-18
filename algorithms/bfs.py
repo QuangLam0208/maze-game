@@ -1,0 +1,57 @@
+from collections import deque
+import pygame
+import time
+
+def run_bfs(game):
+    """Chạy BFS, cập nhật trạng thái của MazeGame"""
+    queue = deque([(0, 0, [])])
+    visited_set = set()
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
+    step_count = 0
+    max_steps_per_frame = 3
+
+    while queue and game.is_running:
+        if step_count >= max_steps_per_frame:
+            step_count = 0
+            pygame.time.wait(80)
+            game.draw_frame()
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        stop_rect = pygame.Rect(20 + 90, 720, 80, 35)
+                        if stop_rect.collidepoint(event.pos):
+                            game.is_running = False
+                            return
+
+        x, y, current_path = queue.popleft()
+        key = (x, y)
+        if key in visited_set:
+            continue
+
+        visited_set.add(key)
+        game.visited.add(key)
+        game.current_node = (x, y)
+        game.stats["nodes_visited"] += 1
+        game.stats["time"] = (time.time() - game.start_time) * 1000
+
+        step_count += 1
+
+        if x == len(game.maze) - 1 and y == len(game.maze[0]) - 1:
+            game.path = current_path + [(x, y)]
+            game.stats["path_length"] = len(game.path)
+            game.current_node = None
+            game.is_running = False
+            break
+
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if (0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and
+                game.maze[nx][ny] == 0 and (nx, ny) not in visited_set):
+                queue.append((nx, ny, current_path + [(x, y)]))
+
+    game.is_running = False
+    game.current_node = None
