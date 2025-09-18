@@ -219,7 +219,7 @@ class MazeGame:
             desc_text = self.small_font.render(algorithm["desc"], True, desc_color)
             self.screen.blit(desc_text, (start_x + 10, y + 25))
     
-    #render: nút điều khiển -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
+    #render: 3 thuật toán con mỗi nhóm -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
     def draw_controls(self):
         """Vẽ các nút điều khiển"""
         button_width = 80
@@ -252,7 +252,7 @@ class MazeGame:
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
     
-    #render: thống kê -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
+    # render
     def draw_stats(self):
         """Vẽ thống kê"""
         stats_x = 20
@@ -279,7 +279,7 @@ class MazeGame:
             text = self.small_font.render(info, True, BLACK)
             self.screen.blit(text, (stats_x + 10, stats_y + 35 + i * 18))
     
-    #render: mê cung -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
+    # render
     def draw_maze(self):
         """Vẽ maze"""
         # Background maze
@@ -312,7 +312,7 @@ class MazeGame:
                 if color != BLACK:  # Don't draw border on walls
                     pygame.draw.rect(self.screen, DARK_GRAY, rect, 1)
     
-    # render: chú thích -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
+    # render
     def draw_legend(self):
         """Vẽ chú thích"""
         legend_x = MAZE_OFFSET_X + MAZE_WIDTH + 20
@@ -347,7 +347,7 @@ class MazeGame:
             label_text = self.small_font.render(label, True, BLACK)
             self.screen.blit(label_text, (legend_x + 40, y + 2))
     
-    #render: thông tin thuật toán -> đưa hàm này vào trong ui/renderer.py, rồi gọi ở đây
+    # render
     def draw_current_algorithm_info(self):
         """Hiển thị thông tin thuật toán hiện tại"""
         info_x = MAZE_OFFSET_X
