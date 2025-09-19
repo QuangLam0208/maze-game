@@ -34,6 +34,63 @@ class Renderer:
         self.title_font = pygame.font.Font(None, 28)
         self.small_font = pygame.font.Font(None, 16)
 
+        self.algorithm_groups = [
+            {
+                "name": "Uninformed\nSearch",
+                "color": BLUE,
+                "algorithms": [
+                    {"name": "Breadth-First Search (BFS)", "desc": "Tìm theo chiều rộng"},
+                    {"name": "Depth-First Search (DFS)", "desc": "Tìm theo chiều sâu"},
+                    {"name": "Uniform Cost Search", "desc": "Chi phí đồng đều"}
+                ]
+            },
+            {
+                "name": "Informed\nSearch",
+                "color": GREEN,
+                "algorithms": [
+                    {"name": "A* Search", "desc": "Tối ưu với heuristic"},
+                    {"name": "Greedy Best-First", "desc": "Tham lam heuristic"},
+                    {"name": "Bidirectional Search", "desc": "Tìm hai chiều"}
+                ]
+            },
+            {
+                "name": "Dynamic\nProgramming",
+                "color": PURPLE,
+                "algorithms": [
+                    {"name": "Dijkstra's Algorithm", "desc": "Đường ngắn nhất"},
+                    {"name": "Floyd-Warshall", "desc": "Mọi cặp điểm"},
+                    {"name": "Bellman-Ford", "desc": "Trọng số âm"}
+                ]
+            },
+            {
+                "name": "Heuristic\nMethods",
+                "color": RED,
+                "algorithms": [
+                    {"name": "Hill Climbing", "desc": "Leo đồi tối ưu"},
+                    {"name": "Simulated Annealing", "desc": "Mô phỏng ủ kim loại"},
+                    {"name": "Beam Search", "desc": "Giới hạn node"}
+                ]
+            },
+            {
+                "name": "Evolutionary\nAlgorithms",
+                "color": ORANGE,
+                "algorithms": [
+                    {"name": "Genetic Algorithm", "desc": "Tiến hóa tự nhiên"},
+                    {"name": "Ant Colony Optimization", "desc": "Hành vi kiến"},
+                    {"name": "Particle Swarm Optimization", "desc": "Đàn chim"}
+                ]
+            },
+            {
+                "name": "Machine\nLearning",
+                "color": CYAN,
+                "algorithms": [
+                    {"name": "Q-Learning", "desc": "Học tăng cường"},
+                    {"name": "Neural Network Path", "desc": "Mạng neural"},
+                    {"name": "Random Forest Path", "desc": "Ensemble learning"}
+                ]
+            }
+        ]
+
     # --- Nhóm thuật toán ---
     def draw_group_buttons(self):
         """Vẽ 6 nhóm thuật toán ở góc trên trái (2x3)"""
@@ -43,7 +100,7 @@ class Renderer:
         start_y = 20
         spacing = 10
         
-        for i, group in enumerate(self.game.algorithm_groups):
+        for i, group in enumerate(self.algorithm_groups):
             # Tính vị trí button (2 cột, 3 hàng)
             col = i % 2
             row = i // 2
@@ -74,7 +131,7 @@ class Renderer:
     # --- Thuật toán con ---
     def draw_algorithm_buttons(self):
         """Vẽ 3 thuật toán con ở góc dưới trái"""
-        if self.game.selected_group < 0 or self.game.selected_group >= len(self.game.algorithm_groups):
+        if self.game.selected_group < 0 or self.game.selected_group >= len(self.algorithm_groups):
             return
         
         button_width = 250
@@ -83,7 +140,7 @@ class Renderer:
         start_y = 420
         spacing = 5
         
-        current_group = self.game.algorithm_groups[self.game.selected_group]
+        current_group = self.algorithm_groups[self.game.selected_group]
         
         # Title cho nhóm được chọn
         title_text = self.font.render(
@@ -122,7 +179,7 @@ class Renderer:
         info_x = MAZE_OFFSET_X
         info_y = MAZE_OFFSET_Y - 40
         
-        current_group = self.game.algorithm_groups[self.game.selected_group]
+        current_group = self.algorithm_groups[self.game.selected_group]
         current_alg = current_group["algorithms"][self.game.selected_algorithm]
         
         info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
