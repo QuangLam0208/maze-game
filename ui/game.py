@@ -52,6 +52,17 @@ class MazeGame:
         self.maze, state = generate_maze(MAZE_SIZE)
         self._apply_state(state)
 
+        # --- Mapping thuật toán ---
+        self.algorithms = {
+            "Breadth-First Search (BFS)": run_bfs,
+            # "Depth-First Search (DFS)": run_dfs,
+            # "Uniform Cost Search": run_ucs,
+            # "A* Search": run_astar,
+            # "Greedy Best-First": run_greedy,
+            # "Dijkstra's Algorithm": run_dijkstra,
+            # ... thêm các thuật toán khác
+        }
+
     # --- Event Handling & Algorithms ---
     def _apply_state(self, state):
         """Áp dụng trạng thái cho mê cung"""
@@ -125,6 +136,12 @@ class MazeGame:
                     self._apply_state(state)
                 return
 
+    def get_current_algorithm_name(self):
+        """Lấy tên thuật toán đang chọn"""
+        group = self.renderer.algorithm_groups[self.selected_group]
+        alg = group["algorithms"][self.selected_algorithm]
+        return alg["name"]
+
     def start_algorithm(self):
         """Bắt đầu chạy thuật toán"""
         if self.is_running:
@@ -137,8 +154,12 @@ class MazeGame:
         self.start_time = time.time()
         self.stats["nodes_visited"] = 0
 
-        # Demo: run BFS
-        run_bfs(self)
+        alg_name = self.get_current_algorithm_name()
+        if alg_name in self.algorithms:
+            self.algorithms[alg_name](self)
+        else:
+            print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
+            self.is_running = False
 
     def draw_frame(self):
         """Vẽ một frame hoàn chỉnh"""
