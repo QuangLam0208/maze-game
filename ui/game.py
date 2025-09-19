@@ -1,9 +1,6 @@
 import pygame
 import sys
 import time
-import random
-
-from collections import deque
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from core.maze_generator import generate_maze
@@ -20,19 +17,6 @@ MAZE_OFFSET_Y = 100
 
 # Colors
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (128, 128, 128)
-LIGHT_GRAY = (200, 200, 200)
-DARK_GRAY = (64, 64, 64)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-BLUE = (0, 100, 255)
-YELLOW = (255, 255, 0)
-PURPLE = (128, 0, 128)
-ORANGE = (255, 140, 0)
-CYAN = (0, 200, 200)
-PINK = (255, 192, 203)
-LIGHT_BLUE = (173, 216, 230)
 
 class MazeGame:
     def __init__(self):

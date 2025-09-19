@@ -13,8 +13,10 @@ def run_bfs(game):
 
     while queue and game.is_running:
         if step_count >= max_steps_per_frame:
+            # Khi duyệt hết 4 hướng (step 0 -> 3) thì tạm dừng để tạo animation: pygame.time.wait(..) 
             step_count = 0
-            pygame.time.wait(80)
+            pygame.time.wait(80) 
+            # Draw frame of present state (ghi đè lên frame của previous state)
             game.draw_frame()
 
             for event in pygame.event.get():
@@ -27,26 +29,30 @@ def run_bfs(game):
                             game.is_running = False
                             return
 
+        # Lấy node kế tiếp
         x, y, current_path = queue.popleft()
         key = (x, y)
         if key in visited_set:
             continue
 
         visited_set.add(key)
-        game.visited.add(key)
-        game.current_node = (x, y)
+        game.visited.add(key) # cập nhật vào visited của game.py để draw_maze() (renderer.py) vẽ
+        game.current_node = (x, y) # hightlight node được xét ở frame (như trên)
+        # Update statistic
         game.stats["nodes_visited"] += 1
         game.stats["time"] = (time.time() - game.start_time) * 1000
 
         step_count += 1
 
+        # Check Goal state
         if x == len(game.maze) - 1 and y == len(game.maze[0]) - 1:
             game.path = current_path + [(x, y)]
             game.stats["path_length"] = len(game.path)
             game.current_node = None
             game.is_running = False
             break
-
+        
+        # Expand Next state
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
             if (0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and
