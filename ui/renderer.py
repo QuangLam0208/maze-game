@@ -30,9 +30,10 @@ class Renderer:
     def __init__(self, screen, game):
         self.game = game
         self.screen = screen
-        self.font = pygame.font.Font(None, 20)
-        self.title_font = pygame.font.Font(None, 28)
-        self.small_font = pygame.font.Font(None, 16)
+        
+        self.font = pygame.font.SysFont("segoeui", 20)   
+        self.title_font = pygame.font.SysFont("segoeui", 28, bold=True)
+        self.small_font = pygame.font.SysFont("segoeui", 16)
 
         self.algorithm_groups = [
             {
@@ -41,7 +42,7 @@ class Renderer:
                 "algorithms": [
                     {"name": "Breadth-First Search (BFS)", "desc": "Tìm theo chiều rộng"},
                     {"name": "Depth-First Search (DFS)", "desc": "Tìm theo chiều sâu"},
-                    {"name": "Uniform Cost Search", "desc": "Chi phí đồng đều"}
+                    {"name": "Depth-Limited Search (DLS)", "desc": "Giới hạn độ sâu"}
                 ]
             },
             {
