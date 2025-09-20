@@ -56,7 +56,7 @@ class MazeGame:
         # --- Mapping thuật toán ---
         self.algorithms = {
             "Breadth-First Search (BFS)": run_bfs,
-            # "Depth-First Search (DFS)": run_dfs,
+            "Depth-First Search (DFS)": run_dfs,
             # "Uniform Cost Search": run_ucs,
             # "A* Search": run_astar,
             # "Greedy Best-First": run_greedy,
