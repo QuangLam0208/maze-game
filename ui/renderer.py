@@ -41,7 +41,7 @@ class Renderer:
                 "algorithms": [
                     {"name": "Breadth-First Search (BFS)", "desc": "Tìm theo chiều rộng"},
                     {"name": "Depth-First Search (DFS)", "desc": "Tìm theo chiều sâu"},
-                    {"name": "Uniform Cost Search", "desc": "Chi phí đồng đều"}
+                    {"name": "Depth-Limited Search (DLS)", "desc": "Giới hạn độ sâu"}
                 ]
             },
             {
