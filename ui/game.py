@@ -155,17 +155,11 @@ class MazeGame:
         self.start_time = time.time()
         self.stats["nodes_visited"] = 0
 
-        # Get the selected algorithm
-        group = self.renderer.algorithm_groups[self.selected_group]
-        algorithm = group["algorithms"][self.selected_algorithm]["name"]
-
-        # Run the appropriate algorithm
-        if algorithm == "Breadth-First Search (BFS)":
-            run_bfs(self)
-        elif algorithm == "Depth-First Search (DFS)":
-            run_dfs(self)
+        alg_name = self.get_current_algorithm_name()
+        if alg_name in self.algorithms:
+            self.algorithms[alg_name](self)
         else:
-            print(f"⚠ Thuật toán {algorithm} chưa được cài đặt!")
+            print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
             self.is_running = False
 
     def draw_frame(self):
