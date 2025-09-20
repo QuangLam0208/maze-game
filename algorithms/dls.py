@@ -3,7 +3,6 @@ import time
 
 def run_dls(game):
     """Chạy Depth-Limited Search"""
-
     limit = game.MAZE_SIZE * game.MAZE_SIZE
     path = Recursive_DLS(game, 0, 0, [], limit)
     if path is not None:
@@ -20,7 +19,9 @@ def Recursive_DLS(game, x, y, current_path, limit):
     - current_path: ds các ô đã đi
     - limit: số bước còn lại
     """
-
+    if not game.is_running:
+            return None
+    
     # Vẽ frame + highlight
     game.current_node = (x, y)
     game.visited.add((x, y))
