@@ -3,6 +3,7 @@ import sys
 import time
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
+from algorithms.dfs import run_dfs
 from core.maze_generator import generate_maze
 
 # Constants
@@ -24,9 +25,9 @@ class MazeGame:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Maze Pathfinding - 6 Groups Algorithm Selection")
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.Font(None, 20)
-        self.title_font = pygame.font.Font(None, 28)
-        self.small_font = pygame.font.Font(None, 16)
+        self.font = pygame.font.SysFont('arial', 20)
+        self.title_font = pygame.font.SysFont('arial', 28)
+        self.small_font = pygame.font.SysFont('arial', 16)
         
         # Add maze dimensions as instance attributes
         self.MAZE_SIZE = MAZE_SIZE
@@ -154,11 +155,17 @@ class MazeGame:
         self.start_time = time.time()
         self.stats["nodes_visited"] = 0
 
-        alg_name = self.get_current_algorithm_name()
-        if alg_name in self.algorithms:
-            self.algorithms[alg_name](self)
+        # Get the selected algorithm
+        group = self.renderer.algorithm_groups[self.selected_group]
+        algorithm = group["algorithms"][self.selected_algorithm]["name"]
+
+        # Run the appropriate algorithm
+        if algorithm == "Breadth-First Search (BFS)":
+            run_bfs(self)
+        elif algorithm == "Depth-First Search (DFS)":
+            run_dfs(self)
         else:
-            print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
+            print(f"⚠ Thuật toán {algorithm} chưa được cài đặt!")
             self.is_running = False
 
     def draw_frame(self):
