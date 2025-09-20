@@ -1,9 +1,6 @@
 import pygame
 import sys
 import time
-import random
-
-from collections import deque
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from core.maze_generator import generate_maze
@@ -20,19 +17,6 @@ MAZE_OFFSET_Y = 100
 
 # Colors
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (128, 128, 128)
-LIGHT_GRAY = (200, 200, 200)
-DARK_GRAY = (64, 64, 64)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
-BLUE = (0, 100, 255)
-YELLOW = (255, 255, 0)
-PURPLE = (128, 0, 128)
-ORANGE = (255, 140, 0)
-CYAN = (0, 200, 200)
-PINK = (255, 192, 203)
-LIGHT_BLUE = (173, 216, 230)
 
 class MazeGame:
     def __init__(self):
@@ -67,6 +51,17 @@ class MazeGame:
 
         self.maze, state = generate_maze(MAZE_SIZE)
         self._apply_state(state)
+
+        # --- Mapping thuật toán ---
+        self.algorithms = {
+            "Breadth-First Search (BFS)": run_bfs,
+            # "Depth-First Search (DFS)": run_dfs,
+            # "Uniform Cost Search": run_ucs,
+            # "A* Search": run_astar,
+            # "Greedy Best-First": run_greedy,
+            # "Dijkstra's Algorithm": run_dijkstra,
+            # ... thêm các thuật toán khác
+        }
 
     # --- Event Handling & Algorithms ---
     def _apply_state(self, state):
@@ -141,6 +136,12 @@ class MazeGame:
                     self._apply_state(state)
                 return
 
+    def get_current_algorithm_name(self):
+        """Lấy tên thuật toán đang chọn"""
+        group = self.renderer.algorithm_groups[self.selected_group]
+        alg = group["algorithms"][self.selected_algorithm]
+        return alg["name"]
+
     def start_algorithm(self):
         """Bắt đầu chạy thuật toán"""
         if self.is_running:
@@ -153,8 +154,12 @@ class MazeGame:
         self.start_time = time.time()
         self.stats["nodes_visited"] = 0
 
-        # Demo: run BFS
-        run_bfs(self)
+        alg_name = self.get_current_algorithm_name()
+        if alg_name in self.algorithms:
+            self.algorithms[alg_name](self)
+        else:
+            print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
+            self.is_running = False
 
     def draw_frame(self):
         """Vẽ một frame hoàn chỉnh"""
