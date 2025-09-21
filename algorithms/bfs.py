@@ -23,12 +23,12 @@ def run_bfs(game):
             continue
 
         update_game_state(game, x, y, visited_set)
-        
+
         step_count += 1
 
         if check_goal(game, x, y, current_path):
             break
-
+            
         # Expand Next state
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
