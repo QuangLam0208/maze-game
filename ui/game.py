@@ -3,7 +3,9 @@ import sys
 import time
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
+from algorithms.dfs import run_dfs
 from algorithms.dls import run_dls
+
 from core.maze_generator import generate_maze
 
 # Constants
@@ -25,9 +27,9 @@ class MazeGame:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Maze Pathfinding - 6 Groups Algorithm Selection")
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.Font(None, 20)
-        self.title_font = pygame.font.Font(None, 28)
-        self.small_font = pygame.font.Font(None, 16)
+        self.font = pygame.font.SysFont('arial', 20)
+        self.title_font = pygame.font.SysFont('arial', 28)
+        self.small_font = pygame.font.SysFont('arial', 16)
         
         # Add maze dimensions as instance attributes
         self.MAZE_SIZE = MAZE_SIZE
@@ -56,7 +58,7 @@ class MazeGame:
         # --- Mapping thuật toán ---
         self.algorithms = {
             "Breadth-First Search (BFS)": run_bfs,
-            # "Depth-First Search (DFS)": run_dfs,
+            "Depth-First Search (DFS)": run_dfs,
             "Depth-Limited Search (DLS)": run_dls,
             # "Uniform Cost Search": run_ucs,
             # "A* Search": run_astar,
