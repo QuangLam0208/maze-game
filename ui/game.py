@@ -4,10 +4,12 @@ import time
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
+from algorithms.gbf import run_gbf
 from algorithms.dls import run_dls
 from algorithms.ucs import run_ucs
 from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
+
 from core.maze_generator import generate_maze
 
 # Constants
@@ -63,10 +65,9 @@ class MazeGame:
             "Depth-First Search": run_dfs,
             "Depth-Limited Search": run_dls,
             "Uniform Cost Search": run_ucs,
-            "Simulated Annealing": run_simulated_annealing
+            "Greedy Best-First": run_gbf,
             "A* Search": run_astar,
-            # "Greedy Best-First": run_greedy,
-            # "Dijkstra's Algorithm": run_dijkstra,
+            "Simulated Annealing": run_simulated_annealing
             # ... thêm các thuật toán khác
         }
 
