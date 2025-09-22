@@ -4,6 +4,7 @@ import time
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
+from algorithms.gbf import run_gbf
 from core.maze_generator import generate_maze
 
 # Constants
@@ -56,10 +57,10 @@ class MazeGame:
         # --- Mapping thuật toán ---
         self.algorithms = {
             "Breadth-First Search (BFS)": run_bfs,
-            # "Depth-First Search (DFS)": run_dfs,
+            "Depth-First Search (DFS)": run_dfs,
             # "Uniform Cost Search": run_ucs,
             # "A* Search": run_astar,
-            # "Greedy Best-First": run_greedy,
+            "Greedy Best-First": run_gbf,
             # "Dijkstra's Algorithm": run_dijkstra,
             # ... thêm các thuật toán khác
         }
@@ -155,17 +156,11 @@ class MazeGame:
         self.start_time = time.time()
         self.stats["nodes_visited"] = 0
 
-        # Get the selected algorithm
-        group = self.renderer.algorithm_groups[self.selected_group]
-        algorithm = group["algorithms"][self.selected_algorithm]["name"]
-
-        # Run the appropriate algorithm
-        if algorithm == "Breadth-First Search (BFS)":
-            run_bfs(self)
-        elif algorithm == "Depth-First Search (DFS)":
-            run_dfs(self)
+        alg_name = self.get_current_algorithm_name()
+        if alg_name in self.algorithms:
+            self.algorithms[alg_name](self)
         else:
-            print(f"⚠ Thuật toán {algorithm} chưa được cài đặt!")
+            print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
             self.is_running = False
 
     def draw_frame(self):
