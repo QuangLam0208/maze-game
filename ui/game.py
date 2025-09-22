@@ -4,6 +4,7 @@ import time
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
+from algorithms.gbf import run_gbf
 from core.maze_generator import generate_maze
 
 # Constants
@@ -59,7 +60,7 @@ class MazeGame:
             "Depth-First Search (DFS)": run_dfs,
             # "Uniform Cost Search": run_ucs,
             # "A* Search": run_astar,
-            # "Greedy Best-First": run_greedy,
+            "Greedy Best-First": run_gbf,
             # "Dijkstra's Algorithm": run_dijkstra,
             # ... thêm các thuật toán khác
         }

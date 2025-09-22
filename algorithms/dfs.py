@@ -39,6 +39,7 @@ def run_dfs(game):
                 (new_x, new_y) not in visited_set):
                 stack.append((new_x, new_y, current_path + [(x, y)]))
 
-    # Animation khi kết thúc
+    game.is_running = False
+    game.current_node = None
     game.draw_frame()
     pygame.time.wait(50)
