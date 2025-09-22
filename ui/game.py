@@ -5,7 +5,7 @@ from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
 from algorithms.dls import run_dls
-
+from algorithms.astar import run_astar
 from core.maze_generator import generate_maze
 
 # Constants
@@ -61,7 +61,7 @@ class MazeGame:
             "Depth-First Search (DFS)": run_dfs,
             "Depth-Limited Search (DLS)": run_dls,
             # "Uniform Cost Search": run_ucs,
-            # "A* Search": run_astar,
+             "A* Search": run_astar,
             # "Greedy Best-First": run_greedy,
             # "Dijkstra's Algorithm": run_dijkstra,
             # ... thêm các thuật toán khác
