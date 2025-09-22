@@ -40,9 +40,10 @@ class Renderer:
                 "name": "Uninformed\nSearch",
                 "color": BLUE,
                 "algorithms": [
-                    {"name": "Breadth-First Search (BFS)", "desc": "Tìm theo chiều rộng"},
-                    {"name": "Depth-First Search (DFS)", "desc": "Tìm theo chiều sâu"},
-                    {"name": "Depth-Limited Search (DLS)", "desc": "Giới hạn độ sâu"}
+                    {"name": "Breadth-First Search", "desc": "Tìm theo chiều rộng"},
+                    {"name": "Depth-First Search", "desc": "Tìm theo chiều sâu"},
+                    {"name": "Depth-Limited Search", "desc": "Giới hạn độ sâu"},
+                    {"name": "Uniform Cost Search", "desc": "Chi phí thấp nhất"}
                 ]
             },
             {
@@ -50,8 +51,7 @@ class Renderer:
                 "color": GREEN,
                 "algorithms": [
                     {"name": "A* Search", "desc": "Tối ưu với heuristic"},
-                    {"name": "Greedy Best-First", "desc": "Tham lam heuristic"},
-                    {"name": "Bidirectional Search", "desc": "Tìm hai chiều"}
+                    {"name": "Greedy Best-First", "desc": "Tham lam heuristic"}
                 ]
             },
             {
