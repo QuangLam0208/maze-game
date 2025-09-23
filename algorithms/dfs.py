@@ -1,4 +1,3 @@
-from collections import deque
 import pygame
 import time
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame
@@ -28,7 +27,6 @@ def run_dfs(game):
         # Kiểm tra đích
         if check_goal(game, x, y, current_path):
             return
-            return
 
         # Thêm các node kế tiếp vào stack (DFS)
         for dx, dy in directions:
@@ -38,6 +36,9 @@ def run_dfs(game):
                 game.maze[new_x][new_y] == 0 and 
                 (new_x, new_y) not in visited_set):
                 stack.append((new_x, new_y, current_path + [(x, y)]))
+
+    game.is_running = False
+    game.current_node = None
 
     # Animation khi kết thúc
     game.draw_frame()

@@ -1,5 +1,3 @@
-import pygame
-import time
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 
 
