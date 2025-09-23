@@ -73,6 +73,7 @@ def run_beam(game, beam_width=3):
         
         current_beam = unique_beam
 
-    # Animation khi kết thúc
+    game.is_running = False
+    game.current_node = None
     game.draw_frame()
     pygame.time.wait(50)
