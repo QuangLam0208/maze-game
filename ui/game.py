@@ -10,6 +10,8 @@ from algorithms.ucs import run_ucs
 from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
 from algorithms.beam import run_beam
+from algorithms.hillclimbing import run_hill_climbing
+
 
 from core.maze_generator import generate_maze
 
@@ -68,6 +70,7 @@ class MazeGame:
             "Uniform Cost Search": run_ucs,
             "Greedy Best-First": run_gbf,
             "A* Search": run_astar,
+            "Hill Climbing": run_hill_climbing,
             "Simulated Annealing": run_simulated_annealing,
             "Beam Search": run_beam
             # ... thêm các thuật toán khác
