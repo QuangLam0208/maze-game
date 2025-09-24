@@ -10,6 +10,7 @@ def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristi
     current = (start, [start], heuristic(start, goal))
     temperature = initial_temp
     step_count = 0
+    visited_set = set()
 
     while game.is_running and temperature > 1:
         step_count, ok = handle_frame(game, step_count)
@@ -17,30 +18,45 @@ def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristi
             return
 
         (x, y), path, cost = current
-        update_game_state(game, x, y, game.visited)
+
+        # Nếu đã thăm rồi → bỏ qua
+        if (x, y) in visited_set:
+            print(f"[Step {step_count}] Already visited {x, y}, stopping.")
+            game.is_running = False
+            break
+
+        visited_set.add((x, y))
+        update_game_state(game, x, y, visited_set)
+        step_count += 1
+        print(f"[Step {step_count}] At {x, y}, cost={cost:.2f}, temp={temperature:.2f}")
 
         if check_goal(game, x, y, path):
-            return
+            break
 
-        # Sinh neighbors
+        # Sinh neighbors (chỉ lấy ô chưa thăm)
         neighbors = []
         for dx, dy in [(0,1),(1,0),(0,-1),(-1,0)]:
             nx, ny = x + dx, y + dy
-            if 0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and game.maze[nx][ny] == 0:
+            if (
+                0 <= nx < len(game.maze) and 
+                0 <= ny < len(game.maze[0]) and 
+                game.maze[nx][ny] == 0 and 
+                (nx, ny) not in visited_set
+            ):
                 new_cell = (nx, ny)
                 neighbors.append((new_cell, path + [new_cell], heuristic(new_cell, goal)))
 
+        # Nếu hết đường → dừng luôn
         if not neighbors:
+            print(f"[Step {step_count}] Dead end at {x, y}, stopping.")
+            game.is_running = False
             break
 
-        # Tìm neighbor tốt nhất
+        # Chọn neighbor
         best_neighbor = min(neighbors, key=lambda n: n[2])
-
         if best_neighbor[2] < cost:
-            # Nếu tốt hơn → nhận ngay
             current = best_neighbor
         else:
-            # Ngược lại → random 1 neighbor
             random_neighbor = random.choice(neighbors)
             delta = random_neighbor[2] - cost
             if random.random() < math.exp(-delta / temperature):
@@ -48,6 +64,5 @@ def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristi
 
         temperature *= cooling_rate
 
-    # kết thúc
     game.is_running = False
     game.current_node = None
