@@ -5,6 +5,12 @@ from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
 from algorithms.gbf import run_gbf
+from algorithms.dls import run_dls
+from algorithms.ucs import run_ucs
+from algorithms.sa import run_simulated_annealing
+from algorithms.astar import run_astar
+from algorithms.beam import run_beam
+
 from core.maze_generator import generate_maze
 
 # Constants
@@ -56,12 +62,14 @@ class MazeGame:
 
         # --- Mapping thuật toán ---
         self.algorithms = {
-            "Breadth-First Search (BFS)": run_bfs,
-            "Depth-First Search (DFS)": run_dfs,
-            # "Uniform Cost Search": run_ucs,
-            # "A* Search": run_astar,
+            "Breadth-First Search": run_bfs,
+            "Depth-First Search": run_dfs,
+            "Depth-Limited Search": run_dls,
+            "Uniform Cost Search": run_ucs,
             "Greedy Best-First": run_gbf,
-            # "Dijkstra's Algorithm": run_dijkstra,
+            "A* Search": run_astar,
+            "Simulated Annealing": run_simulated_annealing,
+            "Beam Search": run_beam
             # ... thêm các thuật toán khác
         }
 
@@ -104,7 +112,9 @@ class MazeGame:
         start_y = 420
         spacing = 5
         
-        for i in range(3):
+        current_group = self.renderer.algorithm_groups[self.selected_group]
+
+        for i, alg in enumerate(current_group["algorithms"]):
             y = start_y + i * (button_height + spacing)
             button_rect = pygame.Rect(start_x, y, button_width, button_height)
             
