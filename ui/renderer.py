@@ -20,6 +20,10 @@ LIGHT_BLUE = (173, 216, 230)
 MAZE_OFFSET_X = 400
 MAZE_OFFSET_Y = 60
 
+RIGHT_SIDE_PANEL_WIDTH = 180
+LEGEND_HEIGHT = 210
+STATS_HEIGHT = 150
+
 class Renderer:
     def __init__(self, screen, game):
         self.game = game
@@ -47,6 +51,15 @@ class Renderer:
                     {"name": "A* Search", "desc": "Tối ưu với heuristic"},
                     {"name": "Greedy Best-First", "desc": "Tham lam heuristic"}
                 ]
+            },            
+            {
+                "name": "Local\nSearch",
+                "color": RED,
+                "algorithms": [
+                    {"name": "Hill Climbing", "desc": "Leo đồi tối ưu"},
+                    {"name": "Simulated Annealing", "desc": "Mô phỏng ủ kim loại"},
+                    {"name": "Beam Search", "desc": "Giới hạn node"}
+                ]
             },
             {
                 "name": "Dynamic\nProgramming",
@@ -55,15 +68,6 @@ class Renderer:
                     {"name": "Dijkstra's Algorithm", "desc": "Đường ngắn nhất"},
                     {"name": "Floyd-Warshall", "desc": "Mọi cặp điểm"},
                     {"name": "Bellman-Ford", "desc": "Trọng số âm"}
-                ]
-            },
-            {
-                "name": "Heuristic\nMethods",
-                "color": RED,
-                "algorithms": [
-                    {"name": "Hill Climbing", "desc": "Leo đồi tối ưu"},
-                    {"name": "Simulated Annealing", "desc": "Mô phỏng ủ kim loại"},
-                    {"name": "Beam Search", "desc": "Giới hạn node"}
                 ]
             },
             {
@@ -91,8 +95,8 @@ class Renderer:
         """Vẽ 6 nhóm thuật toán ở góc trên trái (2x3)"""
         button_width = 120
         button_height = 50
-        start_x = 20
-        start_y = 20
+        start_x = 40
+        start_y = MAZE_OFFSET_Y
         spacing = 10
         
         for i, group in enumerate(self.algorithm_groups):
@@ -123,16 +127,28 @@ class Renderer:
                 text_y = y + (button_height - len(lines) * 20) // 2 + j * 20
                 self.screen.blit(text, (text_x, text_y))
 
+    def get_group_button_rect(self, i):
+        button_width = 120
+        button_height = 50
+        start_x = 40
+        start_y = MAZE_OFFSET_Y
+        spacing = 10
+
+        col = i % 2
+        row = i // 2
+        x = start_x + col * (button_width + spacing)
+        y = start_y + row * (button_height + spacing)
+        return pygame.Rect(x, y, button_width, button_height)
+
     # --- Thuật toán con ---
     def draw_algorithm_buttons(self):
-        """Vẽ 3 thuật toán con ở góc dưới trái"""
         if self.game.selected_group < 0 or self.game.selected_group >= len(self.algorithm_groups):
             return
         
         button_width = 250
         button_height = 60
-        start_x = 20
-        start_y = 420
+        start_x = 40
+        start_y = MAZE_OFFSET_Y + 240
         spacing = 5
         
         current_group = self.algorithm_groups[self.game.selected_group]
@@ -167,6 +183,16 @@ class Renderer:
             # Vẽ mô tả
             desc_text = self.small_font.render(algorithm["desc"], True, desc_color)
             self.screen.blit(desc_text, (start_x + 10, y + 25))
+
+    def get_algorithm_button_rect(self, group_index, alg_index):
+        button_width = 250
+        button_height = 60
+        start_x = 40
+        start_y = MAZE_OFFSET_Y + 240
+        spacing = 5
+
+        y = start_y + alg_index * (button_height + spacing)
+        return pygame.Rect(start_x, y, button_width, button_height)
 
     # --- Info thuật toán hiện tại ---
     def draw_current_algorithm_info(self):
@@ -213,18 +239,28 @@ class Renderer:
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
 
+    def get_control_button_rect(self, i):
+        button_width = 80
+        button_height = 35
+        start_x = 20
+        start_y = 720
+        spacing = 10
+
+        x = start_x + i * (button_width + spacing)
+        return pygame.Rect(x, start_y, button_width, button_height)
+
     def draw_stats(self):
         """Vẽ thống kê"""
-        stats_x = 20
-        stats_y = 250
+        stats_x = MAZE_OFFSET_X + self.game.MAZE_WIDTH + 20
+        stats_y = MAZE_OFFSET_Y + LEGEND_HEIGHT + 20
         
         # Background
-        stats_rect = pygame.Rect(stats_x, stats_y, 250, 120)
-        pygame.draw.rect(self.screen, LIGHT_GRAY, stats_rect)
+        stats_rect = pygame.Rect(stats_x, stats_y, RIGHT_SIDE_PANEL_WIDTH, STATS_HEIGHT)
+        pygame.draw.rect(self.screen, WHITE, stats_rect)
         pygame.draw.rect(self.screen, BLACK, stats_rect, 2)
         
         # Title
-        title = self.font.render("📊 Thống kê", True, BLACK)
+        title = self.font.render("Thống kê", True, BLACK)
         self.screen.blit(title, (stats_x + 10, stats_y + 10))
         
         # Stats info
@@ -237,13 +273,47 @@ class Renderer:
         
         for i, info in enumerate(stats_info):
             text = self.small_font.render(info, True, BLACK)
-            self.screen.blit(text, (stats_x + 10, stats_y + 35 + i * 18))
+            self.screen.blit(text, (stats_x + 10, stats_y + 40 + i * 22))
+
+    def draw_legend(self):
+        """Vẽ chú thích"""
+        legend_x = MAZE_OFFSET_X + self.game.MAZE_WIDTH + 20
+        legend_y = MAZE_OFFSET_Y
+        
+        legend_rect = pygame.Rect(legend_x, legend_y, RIGHT_SIDE_PANEL_WIDTH, LEGEND_HEIGHT)
+        pygame.draw.rect(self.screen, WHITE, legend_rect)
+        pygame.draw.rect(self.screen, BLACK, legend_rect, 2)
+        
+        title = self.font.render("Chú thích", True, BLACK)
+        self.screen.blit(title, (legend_x + 10, legend_y + 10))
+        
+        legend_items = [
+            ("Start", GREEN),
+            ("Goal", RED),
+            ("Tường", BLACK),
+            ("Đã thăm", LIGHT_BLUE),
+            ("Đường đi", YELLOW),
+            ("Hiện tại", PINK),
+            ("Trống", WHITE)
+        ]
+        
+        for i, (label, color) in enumerate(legend_items):
+            y = legend_y + 40 + i * 23
+            
+            # Color box
+            color_rect = pygame.Rect(legend_x + 15, y + 5, 15, 15)
+            pygame.draw.rect(self.screen, color, color_rect)
+            pygame.draw.rect(self.screen, BLACK, color_rect, 1)
+            
+            # Label
+            label_text = self.small_font.render(label, True, BLACK)
+            self.screen.blit(label_text, (legend_x + 40, y))
 
     def draw_maze(self):
         """Vẽ maze"""
         # Background maze
-        maze_bg = pygame.Rect(MAZE_OFFSET_X - 5, MAZE_OFFSET_Y - 5, 
-                            self.game.MAZE_WIDTH + 10, self.game.MAZE_HEIGHT + 10)
+        maze_bg = pygame.Rect(MAZE_OFFSET_X - 3, MAZE_OFFSET_Y - 3, 
+                            self.game.MAZE_WIDTH + 6, self.game.MAZE_HEIGHT + 6)
         pygame.draw.rect(self.screen, BLACK, maze_bg)
         
         for i in range(self.game.MAZE_SIZE):
@@ -271,40 +341,6 @@ class Renderer:
                 pygame.draw.rect(self.screen, color, rect)
                 if color != BLACK:  # Don't draw border on walls
                     pygame.draw.rect(self.screen, DARK_GRAY, rect, 1)
-
-    def draw_legend(self):
-        """Vẽ chú thích"""
-        legend_x = MAZE_OFFSET_X + self.game.MAZE_WIDTH + 20
-        legend_y = MAZE_OFFSET_Y
-        
-        legend_rect = pygame.Rect(legend_x, legend_y, 180, 200)
-        pygame.draw.rect(self.screen, WHITE, legend_rect)
-        pygame.draw.rect(self.screen, BLACK, legend_rect, 2)
-        
-        title = self.font.render("🔍 Chú thích", True, BLACK)
-        self.screen.blit(title, (legend_x + 10, legend_y + 10))
-        
-        legend_items = [
-            ("Start", GREEN),
-            ("Goal", RED),
-            ("Tường", BLACK),
-            ("Đã thăm", LIGHT_BLUE),
-            ("Đường đi", YELLOW),
-            ("Hiện tại", PINK),
-            ("Trống", WHITE)
-        ]
-        
-        for i, (label, color) in enumerate(legend_items):
-            y = legend_y + 40 + i * 22
-            
-            # Color box
-            color_rect = pygame.Rect(legend_x + 15, y, 15, 15)
-            pygame.draw.rect(self.screen, color, color_rect)
-            pygame.draw.rect(self.screen, BLACK, color_rect, 1)
-            
-            # Label
-            label_text = self.small_font.render(label, True, BLACK)
-            self.screen.blit(label_text, (legend_x + 40, y + 2))
 
     def draw_all(self):
         """Vẽ tất cả các thành phần giao diện"""

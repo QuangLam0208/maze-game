@@ -89,56 +89,24 @@ class MazeGame:
 
     def handle_click(self, pos):
         """Xử lý click chuột"""
-        # Check group buttons (2x3 grid)
-        button_width = 120
-        button_height = 50
-        start_x = 20
-        start_y = 20
-        spacing = 10
-        
-        for i in range(6):
-            col = i % 2
-            row = i // 2
-            x = start_x + col * (button_width + spacing)
-            y = start_y + row * (button_height + spacing)
-            button_rect = pygame.Rect(x, y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+        # Check group buttons
+        for i in range(len(self.renderer.algorithm_groups)):
+            if self.renderer.get_group_button_rect(i).collidepoint(pos):
                 self.selected_group = i
-                self.selected_algorithm = 0  # Reset algorithm selection
+                self.selected_algorithm = 0
                 return
-        
-        # Check algorithm buttons
-        button_width = 250
-        button_height = 60
-        start_x = 20
-        start_y = 420
-        spacing = 5
-        
-        current_group = self.renderer.algorithm_groups[self.selected_group]
 
+        # Check algorithm buttons
+        current_group = self.renderer.algorithm_groups[self.selected_group]
         for i, alg in enumerate(current_group["algorithms"]):
-            y = start_y + i * (button_height + spacing)
-            button_rect = pygame.Rect(start_x, y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+            if self.renderer.get_algorithm_button_rect(self.selected_group, i).collidepoint(pos):
                 self.selected_algorithm = i
                 return
-        
+
         # Check control buttons
-        button_width = 80
-        button_height = 35
-        start_x = 20
-        start_y = 720
-        spacing = 10
-        
         actions = ["start", "stop", "reset", "new_maze"]
-        
         for i, action in enumerate(actions):
-            x = start_x + i * (button_width + spacing)
-            button_rect = pygame.Rect(x, start_y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+            if self.renderer.get_control_button_rect(i).collidepoint(pos):
                 if action == "start" and not self.is_running:
                     self.start_algorithm()
                 elif action == "stop":
