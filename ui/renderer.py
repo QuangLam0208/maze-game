@@ -18,13 +18,7 @@ LIGHT_BLUE = (173, 216, 230)
 
 # Maze constants để hiển thị info
 MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 100
-MAZE_SIZE = 25
-CELL_SIZE = 20
-MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
-MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
-MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 100
+MAZE_OFFSET_Y = 60
 
 class Renderer:
     def __init__(self, screen, game):
@@ -178,7 +172,7 @@ class Renderer:
     def draw_current_algorithm_info(self):
         """Hiển thị thông tin thuật toán hiện tại"""
         info_x = MAZE_OFFSET_X
-        info_y = MAZE_OFFSET_Y - 40
+        info_y = MAZE_OFFSET_Y - 45
         
         current_group = self.algorithm_groups[self.game.selected_group]
         current_alg = current_group["algorithms"][self.game.selected_algorithm]
