@@ -132,7 +132,7 @@ class MazeGame:
         start_y = 720
         spacing = 10
         
-        actions = ["start", "stop", "reset", "new_maze"]
+        actions = ["start", "stop", "reset_path", "reset", "new_maze"]
         
         for i, action in enumerate(actions):
             x = start_x + i * (button_width + spacing)
@@ -144,8 +144,20 @@ class MazeGame:
                 elif action == "stop":
                     self.is_running = False
                 elif action == "reset":
-                    self.maze, state = generate_maze(MAZE_SIZE)
-                    self._apply_state(state)
+                    # Làm trắng toàn bộ maze
+                    self.maze = [[0 for _ in range(self.MAZE_SIZE)] for _ in range(self.MAZE_SIZE)]
+                    self.visited = set()
+                    self.path = []
+                    self.current_node = None
+                    self.is_running = False
+                    self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+                
+                elif action == "reset_path":
+                    self.visited = set()
+                    self.path = []
+                    self.current_node = None
+                    self.is_running = False
+                    self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
                 elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
                     self._apply_state(state)

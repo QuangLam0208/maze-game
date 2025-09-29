@@ -196,11 +196,11 @@ class Renderer:
         spacing = 10
         
         buttons = [
-            {"text": "Bắt đầu", "color": GREEN, "action": "start"},
-            {"text": "Dừng", "color": RED, "action": "stop"},
-            {"text": "Reset", "color": GRAY, "action": "reset"},
-            {"text": "Maze mới", "color": BLUE, "action": "new_maze"}
-        ]
+                    {"text": "Bắt đầu", "color": GREEN, "action": "start"},
+                    {"text": "Dừng", "color": RED, "action": "stop"},
+                    {"text": "Reset Path", "color": GRAY, "action": "reset_path"},
+                    {"text": "Reset", "color": DARK_GRAY, "action": "reset"},
+                    {"text": "Maze mới", "color": BLUE, "action": "new_maze"}]
         
         for i, button in enumerate(buttons):
             x = start_x + i * (button_width + spacing)
