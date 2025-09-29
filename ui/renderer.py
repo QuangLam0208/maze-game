@@ -24,6 +24,16 @@ RIGHT_SIDE_PANEL_WIDTH = 180
 LEGEND_HEIGHT = 210
 STATS_HEIGHT = 150
 
+GRADIENTS = {
+    "purple_blue": ((147, 51, 234), (59, 130, 246)),
+    "cyan_blue": ((6, 182, 212), (59, 130, 246)),
+    "green_blue": ((74, 222, 128), (37, 99, 235)),
+    "purple_pink": ((168, 85, 247), (236, 72, 153)),
+    "pink_orange": ((236, 72, 153), (251, 146, 60)),
+    "teal_lime": ((153, 246, 228), (217, 249, 157)),
+    "red_yellow": ((254, 202, 202), (252, 165, 165), (254, 240, 138))
+}
+
 class Renderer:
     def __init__(self, screen, game):
         self.game = game
@@ -44,7 +54,8 @@ class Renderer:
         self.algorithm_groups = [
             {
                 "name": "Uninformed Search",
-                "color": BLUE,
+                "gradient": "cyan_blue",
+                "text_color": WHITE,
                 "algorithms": [
                     {"name": "Breadth-First Search", "desc": "Tìm theo chiều rộng"},
                     {"name": "Depth-First Search", "desc": "Tìm theo chiều sâu"},
@@ -54,7 +65,8 @@ class Renderer:
             },
             {
                 "name": "Informed Search",
-                "color": GREEN,
+                "gradient": "green_blue",
+                "text_color": WHITE,
                 "algorithms": [
                     {"name": "A* Search", "desc": "Tối ưu với heuristic"},
                     {"name": "Greedy Best-First", "desc": "Tham lam heuristic"}
@@ -62,7 +74,8 @@ class Renderer:
             },            
             {
                 "name": "Local Search",
-                "color": RED,
+                "gradient": "purple_pink",
+                "text_color": WHITE,
                 "algorithms": [
                     {"name": "Hill Climbing", "desc": "Leo đồi tối ưu"},
                     {"name": "Simulated Annealing", "desc": "Mô phỏng ủ kim loại"},
@@ -71,7 +84,8 @@ class Renderer:
             },
             {
                 "name": "Complex Environment",
-                "color": PURPLE,
+                "gradient": "pink_orange",
+                "text_color": WHITE,
                 "algorithms": [
                     {"name": "Nondeterministic", "desc": "Hành động có nhiều kết quả"},
                     {"name": "Conformant", "desc": "Không quan sát, kế hoạch chắc chắn"},
@@ -80,7 +94,8 @@ class Renderer:
             },
             {
                 "name": "Evolutionary Algorithms",
-                "color": ORANGE,
+                "gradient": "teal_lime",
+                "text_color": BLACK,
                 "algorithms": [
                     {"name": "Genetic Algorithm", "desc": "Tiến hóa tự nhiên"},
                     {"name": "Ant Colony Optimization", "desc": "Hành vi kiến"},
@@ -89,7 +104,8 @@ class Renderer:
             },
             {
                 "name": "Machine Learning",
-                "color": CYAN,
+                "gradient": "red_yellow",
+                "text_color": BLACK,
                 "algorithms": [
                     {"name": "Q-Learning", "desc": "Học tăng cường"},
                     {"name": "Neural Network Path", "desc": "Mạng neural"},
@@ -97,6 +113,54 @@ class Renderer:
                 ]
             }
         ]
+
+    def draw_gradient_rect(surface, rect, color1, color2, color3=None, vertical=True, border_radius=0):
+        """
+        Vẽ gradient (2 hoặc 3 màu) với bo góc.
+        """
+        x, y, w, h = rect
+
+        # --- Tạo surface tạm để chứa gradient ---
+        temp_surface = pygame.Surface((w, h), pygame.SRCALPHA)
+
+        # --- Vẽ gradient lên temp_surface ---
+        if color3 is None:
+            steps = h if vertical else w
+            for i in range(steps):
+                ratio = i / steps
+                r = int(color1[0] * (1 - ratio) + color2[0] * ratio)
+                g = int(color1[1] * (1 - ratio) + color2[1] * ratio)
+                b = int(color1[2] * (1 - ratio) + color2[2] * ratio)
+                if vertical:
+                    pygame.draw.line(temp_surface, (r, g, b), (0, i), (w, i))
+                else:
+                    pygame.draw.line(temp_surface, (r, g, b), (i, 0), (i, h))
+        else:
+            steps = h if vertical else w
+            mid = steps // 2
+            for i in range(steps):
+                if i < mid:
+                    ratio = i / mid
+                    r = int(color1[0] * (1 - ratio) + color2[0] * ratio)
+                    g = int(color1[1] * (1 - ratio) + color2[1] * ratio)
+                    b = int(color1[2] * (1 - ratio) + color2[2] * ratio)
+                else:
+                    ratio = (i - mid) / (steps - mid)
+                    r = int(color2[0] * (1 - ratio) + color3[0] * ratio)
+                    g = int(color2[1] * (1 - ratio) + color3[1] * ratio)
+                    b = int(color2[2] * (1 - ratio) + color3[2] * ratio)
+                if vertical:
+                    pygame.draw.line(temp_surface, (r, g, b), (0, i), (w, i))
+                else:
+                    pygame.draw.line(temp_surface, (r, g, b), (i, 0), (i, h))
+
+        # --- Tạo mask bo góc ---
+        mask = pygame.Surface((w, h), pygame.SRCALPHA)
+        pygame.draw.rect(mask, (255, 255, 255, 255), (0, 0, w, h), border_radius=border_radius)
+        temp_surface.blit(mask, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+
+        # --- Vẽ lên surface chính ---
+        surface.blit(temp_surface, (x, y))
 
     # --- Nhóm thuật toán ---
     def draw_group_buttons(self):
@@ -109,15 +173,34 @@ class Renderer:
             y = start_y + i * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING)
             button_rect = pygame.Rect(x, y, self.GROUP_BUTTON_WIDTH, self.GROUP_BUTTON_HEIGHT)
             
-            # Màu button
+            # Lấy màu gradient của group
+            gradient_key = group.get("gradient", "purple_blue")
+            colors = GRADIENTS[gradient_key]
+
+            
             if self.game.selected_group == i:
-                pygame.draw.rect(self.screen, group["color"], button_rect, border_radius=self.BUTTON_RADIUS)
-                pygame.draw.rect(self.screen, BLACK, button_rect, 3, border_radius=self.BUTTON_RADIUS)
-                text_color = WHITE
+                # --- Khi được chọn: fill gradient ---
+                if len(colors) == 2:
+                    Renderer.draw_gradient_rect(self.screen, button_rect,
+                                                colors[0], colors[1],
+                                                vertical=False,
+                                                border_radius=self.BUTTON_RADIUS)
+                else:  # 3 màu
+                    Renderer.draw_gradient_rect(self.screen, button_rect,
+                                                colors[0], colors[1], colors[2],
+                                                vertical=False,
+                                                border_radius=self.BUTTON_RADIUS)
+                # viền
+                pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=self.BUTTON_RADIUS)
+                text_color = group.get("text_color", WHITE)  # dùng màu chữ riêng
             else:
-                pygame.draw.rect(self.screen, "#95a5a6", button_rect)
-                pygame.draw.rect(self.screen, DARK_GRAY, button_rect, 2)
-                text_color = BLACK
+                # --- Chưa chọn: luôn purple_blue ---
+                c1, c2 = GRADIENTS["purple_blue"]
+                Renderer.draw_gradient_rect(self.screen, button_rect,
+                                            c1, c2,
+                                            vertical=False,
+                                            border_radius=self.BUTTON_RADIUS)
+                text_color = WHITE
             
             # Vẽ tên nhóm (căn giữa theo chiều cao nhỏ hơn)
             text = self.font.render(group["name"], True, text_color)
@@ -136,36 +219,54 @@ class Renderer:
             return
 
         start_x = 40
-        # đặt sau danh sách group
         start_y = (MAZE_OFFSET_Y 
-                   + len(self.algorithm_groups) * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING) 
-                   + 40)
+                + len(self.algorithm_groups) * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING) 
+                + 40)
         spacing = self.BUTTON_SPACING
         
         current_group = self.algorithm_groups[self.game.selected_group]
-        
+
+        # Lấy gradient của group
+        gradient_key = current_group.get("gradient", "purple_blue")
+        colors = GRADIENTS[gradient_key]
+        main_color = colors[0]   # màu text / viền chính
+
         # Title cho nhóm được chọn
         title_text = self.font.render(
             f"Nhóm: {current_group['name']}", 
-            True, current_group["color"]
+            True, (147, 51, 234)
         )
         self.screen.blit(title_text, (start_x, start_y - 30))
         
         for i, algorithm in enumerate(current_group["algorithms"]):
             y = start_y + i * (self.ALG_BUTTON_HEIGHT + spacing)
             button_rect = pygame.Rect(start_x, y, self.ALG_BUTTON_WIDTH, self.ALG_BUTTON_HEIGHT)
-            
-            # Màu button
+
             if self.game.selected_algorithm == i:
-                pygame.draw.rect(self.screen, current_group["color"], button_rect, border_radius=self.BUTTON_RADIUS)
-                pygame.draw.rect(self.screen, BLACK, button_rect, 3, border_radius=self.BUTTON_RADIUS)
-                text_color = WHITE
-                desc_color = WHITE
+                # --- chọn: vẽ gradient full ---
+                if len(colors) == 2:
+                    Renderer.draw_gradient_rect(self.screen, button_rect,
+                                                colors[0], colors[1],
+                                                vertical=False,
+                                                border_radius=self.BUTTON_RADIUS)
+                else:
+                    Renderer.draw_gradient_rect(self.screen, button_rect,
+                                                colors[0], colors[1], colors[2],
+                                                vertical=False,
+                                                border_radius=self.BUTTON_RADIUS)
+
+                pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=self.BUTTON_RADIUS)
+                text_color = current_group.get("text_color", WHITE)  # chữ theo group
+                desc_color = current_group.get("text_color", WHITE)
             else:
+                # --- chưa chọn: viền gradient, nền trắng ---
                 pygame.draw.rect(self.screen, WHITE, button_rect, border_radius=self.BUTTON_RADIUS)
-                pygame.draw.rect(self.screen, current_group["color"], button_rect, 2, border_radius=self.BUTTON_RADIUS)
-                text_color = current_group["color"]
-                desc_color = DARK_GRAY
+                pygame.draw.rect(self.screen, main_color, button_rect, 1, border_radius=self.BUTTON_RADIUS)
+
+                # chữ tím xanh cố định
+                c1, c2 = GRADIENTS["purple_blue"]
+                text_color = c1
+                desc_color = c2
             
             # Vẽ tên thuật toán
             name_text = self.small_font.render(algorithm["name"], True, text_color)
@@ -191,9 +292,14 @@ class Renderer:
         
         current_group = self.algorithm_groups[self.game.selected_group]
         current_alg = current_group["algorithms"][self.game.selected_algorithm]
-        
+
+        # Lấy gradient màu của group
+        gradient_key = current_group.get("gradient", "purple_blue")
+        colors = GRADIENTS[gradient_key]
+        main_color = (147, 51, 234)
+
         info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
-        text = self.font.render(info_text, True, current_group["color"])
+        text = self.font.render(info_text, True, main_color)
         self.screen.blit(text, (info_x, info_y))
 
     def draw_controls(self):
@@ -339,4 +445,4 @@ class Renderer:
         self.draw_stats()
         self.draw_current_algorithm_info()
         self.draw_maze()
-        self.draw_legend()
+        self.draw_legend() 
