@@ -8,6 +8,7 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 
 def run_astar(game):
     """Chạy thuật toán A* cho MazeGame"""
+    game.alg_name = "Astar"
     start = (0, 0)
     goal = (len(game.maze)-1, len(game.maze[0])-1)
     

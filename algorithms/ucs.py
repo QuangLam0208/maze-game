@@ -6,6 +6,7 @@ def run_ucs(game, cost_func=DEFAULT_COST):
     """
     Uniform Cost Search (UCS)
     """
+    game.alg_name = "UCS"
     # Priority queue: (cost, x, y, path)
     pq = [(0, 0, 0, [])]
     visited_set = set()

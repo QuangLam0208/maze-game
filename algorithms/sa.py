@@ -3,6 +3,7 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 from .heuristic import DEFAULT_HEURISTIC
 
 def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristic=DEFAULT_HEURISTIC):
+    game.alg_name = "SA"
     start = game.start
     goal = game.end
 

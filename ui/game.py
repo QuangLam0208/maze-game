@@ -38,6 +38,9 @@ class MazeGame:
         self.title_font = pygame.font.SysFont('arial', 28)
         self.small_font = pygame.font.SysFont('arial', 16)
         
+        self.history = [] #lưu lại các lần chạy
+        self.alg_name = "" 
+        
         # Add maze dimensions as instance attributes
         self.MAZE_SIZE = MAZE_SIZE
         self.MAZE_WIDTH = MAZE_WIDTH
@@ -144,20 +147,9 @@ class MazeGame:
                 elif action == "stop":
                     self.is_running = False
                 elif action == "reset":
-                    # Làm trắng toàn bộ maze
-                    self.maze = [[0 for _ in range(self.MAZE_SIZE)] for _ in range(self.MAZE_SIZE)]
-                    self.visited = set()
-                    self.path = []
-                    self.current_node = None
-                    self.is_running = False
-                    self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
-                
+                    self.reset()
                 elif action == "reset_path":
-                    self.visited = set()
-                    self.path = []
-                    self.current_node = None
-                    self.is_running = False
-                    self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+                    self.reset_path()
                 elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
                     self._apply_state(state)
@@ -213,3 +205,20 @@ class MazeGame:
 
         pygame.quit()
         sys.exit()
+    def reset(self):
+        """Reset toàn bộ maze về trắng"""
+        self.maze = [[0 for _ in range(self.MAZE_SIZE)] for _ in range(self.MAZE_SIZE)]
+        self.visited = set()
+        self.path = []
+        self.current_node = None
+        self.is_running = False
+        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        
+
+    def reset_path(self):
+        """Chỉ reset path và visited, giữ nguyên maze"""
+        self.visited = set()
+        self.path = []
+        self.current_node = None
+        self.is_running = False
+        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}

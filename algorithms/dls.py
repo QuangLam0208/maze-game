@@ -3,6 +3,7 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 
 def run_dls(game):
     """Chạy Depth-Limited Search"""
+    game.alg_name = "DLS"
     limit = game.MAZE_SIZE * game.MAZE_SIZE
     path = Recursive_DLS(game, 0, 0, [], set(), limit, 0)
     if path is not None:

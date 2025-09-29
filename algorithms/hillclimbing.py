@@ -4,6 +4,7 @@ from .heuristic import DEFAULT_HEURISTIC
 
 def run_hill_climbing(game, heuristic=DEFAULT_HEURISTIC):
     """Chạy Hill Climbing"""
+    game.alg_name = "HillClimbing"
     start = game.start
     goal = game.end
 

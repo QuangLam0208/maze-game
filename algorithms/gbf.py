@@ -9,6 +9,8 @@ def manhattan_distance(pos1, pos2):
 
 def run_gbf(game):
     """Chạy Greedy Best-First Search, cập nhật trạng thái của MazeGame"""
+    
+    game.alg_name = "GBF"
     # Priority queue: (heuristic_cost, x, y, path)
     # Sử dụng heuristic là khoảng cách Manhattan đến đích
     goal = (len(game.maze) - 1, len(game.maze[0]) - 1)

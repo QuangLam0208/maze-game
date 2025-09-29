@@ -6,6 +6,7 @@ from algorithms.heuristic import h_manhattan_cost
 
 def run_beam(game, beam_width=3):
     """Chạy Beam Search, cập nhật trạng thái của MazeGame"""
+    game.alg_name = "Beam"
     # Beam search duy trì một tập hợp các trạng thái tốt nhất (beam)
     goal = (len(game.maze) - 1, len(game.maze[0]) - 1)
     
