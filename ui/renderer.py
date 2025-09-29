@@ -33,9 +33,17 @@ class Renderer:
         self.title_font = pygame.font.SysFont("segoeui", 28, bold=True)
         self.small_font = pygame.font.SysFont("segoeui", 16)
 
+        # --- Kích thước nút ---
+        self.GROUP_BUTTON_WIDTH = 250
+        self.GROUP_BUTTON_HEIGHT = 40   # cha nhỏ hơn
+        self.ALG_BUTTON_WIDTH = 250
+        self.ALG_BUTTON_HEIGHT = 60     # con to hơn
+        self.BUTTON_SPACING = 5
+        self.BUTTON_RADIUS = 8          # độ bo góc 
+
         self.algorithm_groups = [
             {
-                "name": "Uninformed\nSearch",
+                "name": "Uninformed Search",
                 "color": BLUE,
                 "algorithms": [
                     {"name": "Breadth-First Search", "desc": "Tìm theo chiều rộng"},
@@ -45,7 +53,7 @@ class Renderer:
                 ]
             },
             {
-                "name": "Informed\nSearch",
+                "name": "Informed Search",
                 "color": GREEN,
                 "algorithms": [
                     {"name": "A* Search", "desc": "Tối ưu với heuristic"},
@@ -53,7 +61,7 @@ class Renderer:
                 ]
             },            
             {
-                "name": "Local\nSearch",
+                "name": "Local Search",
                 "color": RED,
                 "algorithms": [
                     {"name": "Hill Climbing", "desc": "Leo đồi tối ưu"},
@@ -62,16 +70,16 @@ class Renderer:
                 ]
             },
             {
-                "name": "Dynamic\nProgramming",
+                "name": "Complex Environment",
                 "color": PURPLE,
                 "algorithms": [
-                    {"name": "Dijkstra's Algorithm", "desc": "Đường ngắn nhất"},
-                    {"name": "Floyd-Warshall", "desc": "Mọi cặp điểm"},
-                    {"name": "Bellman-Ford", "desc": "Trọng số âm"}
+                    {"name": "Nondeterministic", "desc": "Hành động có nhiều kết quả"},
+                    {"name": "Conformant", "desc": "Không quan sát, kế hoạch chắc chắn"},
+                    {"name": "Contingency", "desc": "Kế hoạch rẽ nhánh theo quan sát"}
                 ]
             },
             {
-                "name": "Evolutionary\nAlgorithms",
+                "name": "Evolutionary Algorithms",
                 "color": ORANGE,
                 "algorithms": [
                     {"name": "Genetic Algorithm", "desc": "Tiến hóa tự nhiên"},
@@ -80,7 +88,7 @@ class Renderer:
                 ]
             },
             {
-                "name": "Machine\nLearning",
+                "name": "Machine Learning",
                 "color": CYAN,
                 "algorithms": [
                     {"name": "Q-Learning", "desc": "Học tăng cường"},
@@ -92,87 +100,70 @@ class Renderer:
 
     # --- Nhóm thuật toán ---
     def draw_group_buttons(self):
-        """Vẽ 6 nhóm thuật toán ở góc trên trái (2x3)"""
-        button_width = 120
-        button_height = 50
+        """Vẽ nhóm thuật toán thành 1 cột dọc (nút cha nhỏ hơn)"""
         start_x = 40
         start_y = MAZE_OFFSET_Y
-        spacing = 10
         
         for i, group in enumerate(self.algorithm_groups):
-            # Tính vị trí button (2 cột, 3 hàng)
-            col = i % 2
-            row = i // 2
-            x = start_x + col * (button_width + spacing)
-            y = start_y + row * (button_height + spacing)
-            
-            button_rect = pygame.Rect(x, y, button_width, button_height)
+            x = start_x
+            y = start_y + i * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING)
+            button_rect = pygame.Rect(x, y, self.GROUP_BUTTON_WIDTH, self.GROUP_BUTTON_HEIGHT)
             
             # Màu button
             if self.game.selected_group == i:
-                pygame.draw.rect(self.screen, group["color"], button_rect)
-                pygame.draw.rect(self.screen, BLACK, button_rect, 3)
+                pygame.draw.rect(self.screen, group["color"], button_rect, border_radius=self.BUTTON_RADIUS)
+                pygame.draw.rect(self.screen, BLACK, button_rect, 3, border_radius=self.BUTTON_RADIUS)
                 text_color = WHITE
             else:
-                pygame.draw.rect(self.screen, LIGHT_GRAY, button_rect)
+                pygame.draw.rect(self.screen, "#95a5a6", button_rect)
                 pygame.draw.rect(self.screen, DARK_GRAY, button_rect, 2)
                 text_color = BLACK
             
-            # Vẽ text (có thể có 2 dòng)
-            lines = group["name"].split('\n')
-            for j, line in enumerate(lines):
-                text = self.font.render(line, True, text_color)
-                text_rect = text.get_rect()
-                text_x = x + (button_width - text_rect.width) // 2
-                text_y = y + (button_height - len(lines) * 20) // 2 + j * 20
-                self.screen.blit(text, (text_x, text_y))
+            # Vẽ tên nhóm (căn giữa theo chiều cao nhỏ hơn)
+            text = self.font.render(group["name"], True, text_color)
+            text_rect = text.get_rect(center=button_rect.center)
+            self.screen.blit(text, text_rect)
 
     def get_group_button_rect(self, i):
-        button_width = 120
-        button_height = 50
         start_x = 40
         start_y = MAZE_OFFSET_Y
-        spacing = 10
-
-        col = i % 2
-        row = i // 2
-        x = start_x + col * (button_width + spacing)
-        y = start_y + row * (button_height + spacing)
-        return pygame.Rect(x, y, button_width, button_height)
+        y = start_y + i * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING)
+        return pygame.Rect(start_x, y, self.GROUP_BUTTON_WIDTH, self.GROUP_BUTTON_HEIGHT)
 
     # --- Thuật toán con ---
     def draw_algorithm_buttons(self):
         if self.game.selected_group < 0 or self.game.selected_group >= len(self.algorithm_groups):
             return
-        
-        button_width = 250
-        button_height = 60
+
         start_x = 40
-        start_y = MAZE_OFFSET_Y + 240
-        spacing = 5
+        # đặt sau danh sách group
+        start_y = (MAZE_OFFSET_Y 
+                   + len(self.algorithm_groups) * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING) 
+                   + 40)
+        spacing = self.BUTTON_SPACING
         
         current_group = self.algorithm_groups[self.game.selected_group]
         
         # Title cho nhóm được chọn
         title_text = self.font.render(
-            f"Nhóm: {current_group['name'].replace(chr(10), ' ')}", 
+            f"Nhóm: {current_group['name']}", 
             True, current_group["color"]
         )
         self.screen.blit(title_text, (start_x, start_y - 30))
         
         for i, algorithm in enumerate(current_group["algorithms"]):
-            y = start_y + i * (button_height + spacing)
-            button_rect = pygame.Rect(start_x, y, button_width, button_height)
+            y = start_y + i * (self.ALG_BUTTON_HEIGHT + spacing)
+            button_rect = pygame.Rect(start_x, y, self.ALG_BUTTON_WIDTH, self.ALG_BUTTON_HEIGHT)
             
             # Màu button
             if self.game.selected_algorithm == i:
-                pygame.draw.rect(self.screen, current_group["color"], button_rect)
-                pygame.draw.rect(self.screen, BLACK, button_rect, 3)
+                pygame.draw.rect(self.screen, current_group["color"], button_rect, border_radius=self.BUTTON_RADIUS)
+                pygame.draw.rect(self.screen, BLACK, button_rect, 3, border_radius=self.BUTTON_RADIUS)
                 text_color = WHITE
                 desc_color = WHITE
             else:
-                pygame.draw.rect(self.screen, WHITE, button_rect)
-                pygame.draw.rect(self.screen, current_group["color"], button_rect, 2)
+                pygame.draw.rect(self.screen, WHITE, button_rect, border_radius=self.BUTTON_RADIUS)
+                pygame.draw.rect(self.screen, current_group["color"], button_rect, 2, border_radius=self.BUTTON_RADIUS)
                 text_color = current_group["color"]
                 desc_color = DARK_GRAY
             
@@ -182,17 +173,15 @@ class Renderer:
             
             # Vẽ mô tả
             desc_text = self.small_font.render(algorithm["desc"], True, desc_color)
-            self.screen.blit(desc_text, (start_x + 10, y + 25))
+            self.screen.blit(desc_text, (start_x + 10, y + 30))
 
     def get_algorithm_button_rect(self, group_index, alg_index):
-        button_width = 250
-        button_height = 60
         start_x = 40
-        start_y = MAZE_OFFSET_Y + 240
-        spacing = 5
-
-        y = start_y + alg_index * (button_height + spacing)
-        return pygame.Rect(start_x, y, button_width, button_height)
+        start_y = (MAZE_OFFSET_Y 
+                   + len(self.algorithm_groups) * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING) 
+                   + 40)
+        y = start_y + alg_index * (self.ALG_BUTTON_HEIGHT + self.BUTTON_SPACING)
+        return pygame.Rect(start_x, y, self.ALG_BUTTON_WIDTH, self.ALG_BUTTON_HEIGHT)
 
     # --- Info thuật toán hiện tại ---
     def draw_current_algorithm_info(self):
@@ -232,8 +221,8 @@ class Renderer:
             else:
                 color = button["color"]
             
-            pygame.draw.rect(self.screen, color, button_rect)
-            pygame.draw.rect(self.screen, BLACK, button_rect, 2)
+            pygame.draw.rect(self.screen, color, button_rect, border_radius=self.BUTTON_RADIUS)
+            pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=self.BUTTON_RADIUS)
             
             text = self.small_font.render(button["text"], True, WHITE)
             text_rect = text.get_rect(center=button_rect.center)
