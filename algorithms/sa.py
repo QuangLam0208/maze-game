@@ -3,6 +3,9 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 from .heuristic import DEFAULT_HEURISTIC
 
 def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristic=DEFAULT_HEURISTIC):
+
+    game.alg_name = "SA"
+
     # Sử dụng custom start và end nếu có
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:

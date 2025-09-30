@@ -23,8 +23,26 @@ def check_goal(game, x, y, path):
         game.stats["path_length"] = len(game.path)
         game.current_node = None
         game.is_running = False
+
+        # Cập nhật thời gian
+        elapsed_time = (time.time() - game.start_time) * 1000
+        game.stats["time"] = elapsed_time
+
+        # Lưu vào history
+        if not hasattr(game, "history"):
+            game.history = []
+
+        game.history.insert(0, {
+            "name": game.alg_name,
+            "nodes": game.stats["nodes_visited"],
+            "length": game.stats["path_length"],
+            "time": f"{elapsed_time:.0f}ms"
+        })
+
+        if len(game.history) > 5:
+            game.history.pop()
+
         return True
-    
     return False
 
 def handle_frame(game, step_count, max_steps_per_frame=3, delay=80):

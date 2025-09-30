@@ -9,6 +9,9 @@ def manhattan_distance(pos1, pos2):
 
 def run_gbf(game):
     """Chạy Greedy Best-First Search, cập nhật trạng thái của MazeGame"""
+
+    game.alg_name = "GBF"
+
     # Sử dụng custom start và end nếu có
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:

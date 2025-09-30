@@ -6,6 +6,9 @@ from algorithms.heuristic import h_manhattan_cost
 
 def run_beam(game, beam_width=3):
     """Chạy Beam Search, cập nhật trạng thái của MazeGame"""
+
+    game.alg_name = "Beam"
+
     # Sử dụng custom start và end nếu có
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
@@ -16,7 +19,7 @@ def run_beam(game, beam_width=3):
         goal = (len(game.maze) - 1, len(game.maze[0]) - 1)
     else:
         goal = goal_pos
-    
+
     # Beam search duy trì một tập hợp các trạng thái tốt nhất (beam)
     
     # Khởi tạo beam với trạng thái ban đầu

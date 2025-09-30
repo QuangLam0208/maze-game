@@ -311,12 +311,14 @@ class Renderer:
         spacing = 7  # Giảm spacing để vừa 6 buttons
         
         buttons = [
-            {"text": "Bắt đầu", "color": GREEN, "action": "start"},
-            {"text": "Dừng", "color": RED, "action": "stop"},
-            {"text": "Reset", "color": GRAY, "action": "reset"},
-            {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
-            {"text": "🎲 Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
-            {"text": "📍 Start/End", "color": (255, 140, 0), "action": "set_nodes"}
+
+                    {"text": "Bắt đầu", "color": GREEN, "action": "start"},
+                    {"text": "Dừng", "color": RED, "action": "stop"},
+                    {"text": "Reset Path", "color": GRAY, "action": "reset_path"},
+                    {"text": "Reset", "color": DARK_GRAY, "action": "reset"},
+                    {"text": "Maze mới", "color": BLUE, "action": "new_maze"}]
+                    {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
+                    {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"}
         ]
         
         for i, button in enumerate(buttons):
@@ -335,7 +337,7 @@ class Renderer:
             text = self.small_font.render(button["text"], True, WHITE)
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
-
+    
     def get_control_button_rect(self, i):
         button_width = 80
         button_height = 35
@@ -346,31 +348,63 @@ class Renderer:
         x = start_x + i * (button_width + spacing)
         return pygame.Rect(x, start_y, button_width, button_height)
 
-    def draw_stats(self):
-        """Vẽ thống kê"""
-        stats_x = MAZE_OFFSET_X + self.game.MAZE_WIDTH + 20
-        stats_y = MAZE_OFFSET_Y + LEGEND_HEIGHT + 20
-        
-        # Background
-        stats_rect = pygame.Rect(stats_x, stats_y, RIGHT_SIDE_PANEL_WIDTH, STATS_HEIGHT)
-        pygame.draw.rect(self.screen, WHITE, stats_rect)
-        pygame.draw.rect(self.screen, BLACK, stats_rect, 2)
-        
-        # Title
-        title = self.font.render("Thống kê", True, BLACK)
-        self.screen.blit(title, (stats_x + 10, stats_y + 10))
-        
-        # Stats info
-        stats_info = [
-            f"Nodes đã thăm: {self.game.stats['nodes_visited']}",
-            f"Độ dài đường đi: {self.game.stats['path_length']}",
-            f"Thời gian: {self.game.stats['time']:.0f}ms",
-            f"Trạng thái: {'Đang chạy' if self.game.is_running else 'Dừng'}"
-        ]
-        
-        for i, info in enumerate(stats_info):
-            text = self.small_font.render(info, True, BLACK)
-            self.screen.blit(text, (stats_x + 10, stats_y + 40 + i * 22))
+    def draw_stats_and_history(self):
+            """Vẽ bảng thống kê & history kết hợp"""
+            # Vị trí bên phải maze
+            stats_x = MAZE_OFFSET_X + self.game.MAZE_WIDTH + 20
+            stats_y = MAZE_OFFSET_Y + 220  # Dưới legend
+            
+            # Background - Tăng chiều cao để chứa cả stats và history
+            stats_rect = pygame.Rect(stats_x, stats_y, 300, 380)
+            pygame.draw.rect(self.screen, LIGHT_GRAY, stats_rect)
+            pygame.draw.rect(self.screen, BLACK, stats_rect, 2)
+            
+            # STATS HIỆN TẠI 
+            title = self.font.render("Lần chạy hiện tại", True, BLACK)
+            self.screen.blit(title, (stats_x + 10, stats_y + 10))
+            
+            # Current stats
+            stats_info = [
+                f"Nodes đã thăm: {self.game.stats['nodes_visited']}",
+                f"Độ dài đường đi: {self.game.stats['path_length']}",
+                f"Thời gian: {self.game.stats['time']:.0f}ms",
+                f"Trạng thái: {'Đang chạy' if self.game.is_running else 'Dừng'}"
+            ]
+            
+            for i, info in enumerate(stats_info):
+                text = self.small_font.render(info, True, BLACK)
+                self.screen.blit(text, (stats_x + 10, stats_y + 40 + i * 20))
+            
+            # Đường phân cách
+            pygame.draw.line(self.screen, DARK_GRAY, 
+                            (stats_x + 10, stats_y + 130), 
+                            (stats_x + 240, stats_y + 130), 2)
+            
+            #HISTORY
+            history_title = self.font.render("Lịch sử", True, BLACK)
+            self.screen.blit(history_title, (stats_x + 10, stats_y + 140))
+            
+            if not self.game.history:
+                no_data = self.small_font.render("Chưa có dữ liệu", True, GRAY)
+                self.screen.blit(no_data, (stats_x + 10, stats_y + 170))
+            else:
+                offset_y = 170
+                for i, entry in enumerate(self.game.history):
+                    # Màu xen kẽ
+                    color = BLACK if i % 2 == 0 else DARK_GRAY
+                    
+                    # Tên thuật toán
+                    name_text = self.small_font.render(f"#{i+1}. {entry['name']}", True, color)
+                    self.screen.blit(name_text, (stats_x + 10, stats_y + offset_y))
+                    
+                    # Thông tin chi tiết
+                    info_text = self.small_font.render(
+                        f"Nodes:{entry['nodes']}    Len:{entry['length']}    Time:{entry['time']}", 
+                        True, color
+                    )
+                    self.screen.blit(info_text, (stats_x + 10, stats_y + offset_y + 16))
+                    
+                    offset_y += 38
 
     def draw_legend(self):
         """Vẽ chú thích"""
@@ -446,7 +480,7 @@ class Renderer:
         self.draw_group_buttons()
         self.draw_algorithm_buttons()
         self.draw_controls()
-        self.draw_stats()
+        self.draw_stats_and_history()
         self.draw_current_algorithm_info()
         self.draw_maze()
-        self.draw_legend() 
+        self.draw_legend()

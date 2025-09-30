@@ -3,12 +3,15 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 
 def run_dls(game):
     """Chạy Depth-Limited Search"""
+
+    game.alg_name = "DLS"
+
     # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
         start_pos = (0, 0)
     start_x, start_y = start_pos
-    
+
     limit = game.MAZE_SIZE * game.MAZE_SIZE
     path = Recursive_DLS(game, start_x, start_y, [], set(), limit, 0)
     if path is not None:
