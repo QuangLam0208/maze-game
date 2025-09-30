@@ -13,7 +13,10 @@ from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
 
 
-from core.maze_generator import generate_maze
+
+from core.maze_generator import generate_maze, generate_beautiful_maze
+
+
 
 # Constants
 WINDOW_WIDTH = 1400
@@ -126,13 +129,13 @@ class MazeGame:
                 return
         
         # Check control buttons
-        button_width = 80
+        button_width = 95  # Khớp với renderer.py
         button_height = 35
         start_x = 20
         start_y = 720
-        spacing = 10
+        spacing = 8  # Khớp với renderer.py
         
-        actions = ["start", "stop", "reset", "new_maze"]
+        actions = ["start", "stop", "reset", "new_maze", "beautiful_maze"]
         
         for i, action in enumerate(actions):
             x = start_x + i * (button_width + spacing)
@@ -146,8 +149,11 @@ class MazeGame:
                 elif action == "reset":
                     self.maze, state = generate_maze(MAZE_SIZE)
                     self._apply_state(state)
-                elif action == "new_maze":
+                elif action == "new_maze" and not self.is_running:
                     self.maze, state = generate_maze(MAZE_SIZE)
+                    self._apply_state(state)
+                elif action == "beautiful_maze" and not self.is_running:
+                    self.maze, state = generate_beautiful_maze(MAZE_SIZE)
                     self._apply_state(state)
                 return
 

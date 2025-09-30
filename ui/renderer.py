@@ -189,17 +189,18 @@ class Renderer:
 
     def draw_controls(self):
         """Vẽ các nút điều khiển"""
-        button_width = 80
+        button_width = 95  # Tăng chiều rộng để vừa text dài hơn
         button_height = 35
         start_x = 20
         start_y = 720
-        spacing = 10
+        spacing = 8  # Giảm spacing để vừa 5 buttons
         
         buttons = [
             {"text": "Bắt đầu", "color": GREEN, "action": "start"},
             {"text": "Dừng", "color": RED, "action": "stop"},
             {"text": "Reset", "color": GRAY, "action": "reset"},
-            {"text": "Maze mới", "color": BLUE, "action": "new_maze"}
+            {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
+            {"text": "🎲 Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"}
         ]
         
         for i, button in enumerate(buttons):
