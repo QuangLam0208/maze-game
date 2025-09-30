@@ -186,21 +186,28 @@ class Renderer:
         info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
         text = self.font.render(info_text, True, current_group["color"])
         self.screen.blit(text, (info_x, info_y))
+        
+        # Hiển thị mode đặt node
+        if hasattr(self.game, 'node_placement_mode') and self.game.node_placement_mode:
+            mode_text = f"Mode: Đặt {'Start Node' if self.game.node_placement_mode == 'start' else 'End Node'}"
+            mode_surface = self.font.render(mode_text, True, (255, 140, 0))
+            self.screen.blit(mode_surface, (info_x, info_y + 30))
 
     def draw_controls(self):
         """Vẽ các nút điều khiển"""
-        button_width = 95  # Tăng chiều rộng để vừa text dài hơn
+        button_width = 85  # Giảm chiều rộng để vừa 6 buttons
         button_height = 35
         start_x = 20
         start_y = 720
-        spacing = 8  # Giảm spacing để vừa 5 buttons
+        spacing = 7  # Giảm spacing để vừa 6 buttons
         
         buttons = [
             {"text": "Bắt đầu", "color": GREEN, "action": "start"},
             {"text": "Dừng", "color": RED, "action": "stop"},
             {"text": "Reset", "color": GRAY, "action": "reset"},
             {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
-            {"text": "🎲 Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"}
+            {"text": "🎲 Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
+            {"text": "📍 Start/End", "color": (255, 140, 0), "action": "set_nodes"}
         ]
         
         for i, button in enumerate(buttons):
@@ -262,9 +269,11 @@ class Renderer:
                 # Determine cell color
                 if self.game.maze[i][j] == 1:  # Wall
                     color = BLACK
-                elif i == 0 and j == 0:  # Start
+                elif (hasattr(self.game, 'custom_start') and self.game.custom_start is not None and 
+                      (i, j) == self.game.custom_start):  # Custom Start
                     color = GREEN
-                elif i == self.game.MAZE_SIZE - 1 and j == self.game.MAZE_SIZE - 1:  # Goal
+                elif (hasattr(self.game, 'custom_end') and self.game.custom_end is not None and 
+                      (i, j) == self.game.custom_end):  # Custom End
                     color = RED
                 elif self.game.current_node and self.game.current_node == (i, j):  # Current node
                     color = PINK

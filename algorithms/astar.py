@@ -8,8 +8,17 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 
 def run_astar(game):
     """Chạy thuật toán A* cho MazeGame"""
-    start = (0, 0)
-    goal = (len(game.maze)-1, len(game.maze[0])-1)
+    # Sử dụng custom start và end nếu có
+    start_pos = getattr(game, 'custom_start', (0, 0))
+    if start_pos is None:
+        start_pos = (0, 0)
+    start = start_pos
+    
+    goal_pos = getattr(game, 'custom_end', None)
+    if goal_pos is None:
+        goal = (len(game.maze)-1, len(game.maze[0])-1)
+    else:
+        goal = goal_pos
     
     # Queue chứa tuple (f, g, x, y, path)
     # f = g + h, g = chi phí từ start đến node hiện tại, h = heuristic tới goal

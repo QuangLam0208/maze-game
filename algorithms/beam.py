@@ -6,13 +6,23 @@ from algorithms.heuristic import h_manhattan_cost
 
 def run_beam(game, beam_width=3):
     """Chạy Beam Search, cập nhật trạng thái của MazeGame"""
+    # Sử dụng custom start và end nếu có
+    start_pos = getattr(game, 'custom_start', (0, 0))
+    if start_pos is None:
+        start_pos = (0, 0)
+    
+    goal_pos = getattr(game, 'custom_end', None)
+    if goal_pos is None:
+        goal = (len(game.maze) - 1, len(game.maze[0]) - 1)
+    else:
+        goal = goal_pos
+    
     # Beam search duy trì một tập hợp các trạng thái tốt nhất (beam)
-    goal = (len(game.maze) - 1, len(game.maze[0]) - 1)
     
     # Khởi tạo beam với trạng thái ban đầu
     # Mỗi phần tử trong beam: (heuristic_cost, x, y, path)
-    start_heuristic = h_manhattan_cost((0, 0), goal)
-    current_beam = [(start_heuristic, 0, 0, [])]
+    start_heuristic = h_manhattan_cost(start_pos, goal)
+    current_beam = [(start_heuristic, start_pos[0], start_pos[1], [])]
     
     visited_set = set()
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]

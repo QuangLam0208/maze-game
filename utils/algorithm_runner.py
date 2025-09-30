@@ -11,7 +11,14 @@ def update_game_state(game, x, y, visited_set):
 
 def check_goal(game, x, y, path):
     '''Check Goal state & save path'''
-    if x == len(game.maze) - 1 and y == len(game.maze[0]) - 1:
+    # Sử dụng custom_end nếu có và không phải None, ngược lại dùng goal mặc định
+    goal_pos = getattr(game, 'custom_end', None)
+    if goal_pos is None:
+        goal_x, goal_y = len(game.maze) - 1, len(game.maze[0]) - 1
+    else:
+        goal_x, goal_y = goal_pos
+    
+    if x == goal_x and y == goal_y:
         game.path = path + [(x, y)]
         game.stats["path_length"] = len(game.path)
         game.current_node = None

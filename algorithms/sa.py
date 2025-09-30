@@ -3,8 +3,17 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 from .heuristic import DEFAULT_HEURISTIC
 
 def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristic=DEFAULT_HEURISTIC):
-    start = game.start
-    goal = game.end
+    # Sử dụng custom start và end nếu có
+    start_pos = getattr(game, 'custom_start', (0, 0))
+    if start_pos is None:
+        start_pos = (0, 0)
+    start = start_pos
+    
+    goal_pos = getattr(game, 'custom_end', None)
+    if goal_pos is None:
+        goal = (len(game.maze)-1, len(game.maze[0])-1)
+    else:
+        goal = goal_pos
 
     # current_state = (cell, path, cost)
     current = (start, [start], heuristic(start, goal))
