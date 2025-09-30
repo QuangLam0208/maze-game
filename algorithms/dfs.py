@@ -4,8 +4,16 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 
 def run_dfs(game):
     """Chạy DFS, cập nhật trạng thái của MazeGame"""
+
     game.alg_name = "DFS"
-    stack = [(0, 0, [])]  # Sử dụng stack thay vì queue cho DFS
+
+    # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
+    start_pos = getattr(game, 'custom_start', (0, 0))
+    if start_pos is None:
+        start_pos = (0, 0)
+    start_x, start_y = start_pos
+    stack = [(start_x, start_y, [])]  # Sử dụng stack thay vì queue cho DFS
+    
     visited_set = set()
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 

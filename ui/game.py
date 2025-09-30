@@ -12,18 +12,17 @@ from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
 
-
-from core.maze_generator import generate_maze
+from core.maze_generator import generate_maze, generate_beautiful_maze
 
 # Constants
 WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 800
-MAZE_SIZE = 25
-CELL_SIZE = 20
+MAZE_SIZE = 23
+CELL_SIZE = 23
 MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
 MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
 MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 100
+MAZE_OFFSET_Y = 60
 
 # Colors
 WHITE = (255, 255, 255)
@@ -61,6 +60,11 @@ class MazeGame:
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
         self.start_time = 0
+        
+        # Custom Start/End nodes
+        self.custom_start = (1, 1)  # Default start position  
+        self.custom_end = (MAZE_SIZE-2, MAZE_SIZE-2)  # Default end position
+        self.node_placement_mode = None  # None, "start", "end"
 
         self.maze, state = generate_maze(MAZE_SIZE)
         self._apply_state(state)
@@ -92,56 +96,25 @@ class MazeGame:
 
     def handle_click(self, pos):
         """Xử lý click chuột"""
-        # Check group buttons (2x3 grid)
-        button_width = 120
-        button_height = 50
-        start_x = 20
-        start_y = 20
-        spacing = 10
-        
-        for i in range(6):
-            col = i % 2
-            row = i // 2
-            x = start_x + col * (button_width + spacing)
-            y = start_y + row * (button_height + spacing)
-            button_rect = pygame.Rect(x, y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+        # Check group buttons
+        for i in range(len(self.renderer.algorithm_groups)):
+            if self.renderer.get_group_button_rect(i).collidepoint(pos):
                 self.selected_group = i
-                self.selected_algorithm = 0  # Reset algorithm selection
+                self.selected_algorithm = 0
                 return
-        
-        # Check algorithm buttons
-        button_width = 250
-        button_height = 60
-        start_x = 20
-        start_y = 420
-        spacing = 5
-        
-        current_group = self.renderer.algorithm_groups[self.selected_group]
 
+        # Check algorithm buttons
+        current_group = self.renderer.algorithm_groups[self.selected_group]
         for i, alg in enumerate(current_group["algorithms"]):
-            y = start_y + i * (button_height + spacing)
-            button_rect = pygame.Rect(start_x, y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+            if self.renderer.get_algorithm_button_rect(self.selected_group, i).collidepoint(pos):
                 self.selected_algorithm = i
                 return
-        
+
         # Check control buttons
-        button_width = 80
-        button_height = 35
-        start_x = 20
-        start_y = 720
-        spacing = 10
-        
-        actions = ["start", "stop", "reset_path", "reset", "new_maze"]
-        
+        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes"]
+
         for i, action in enumerate(actions):
-            x = start_x + i * (button_width + spacing)
-            button_rect = pygame.Rect(x, start_y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+            if self.renderer.get_control_button_rect(i).collidepoint(pos):
                 if action == "start" and not self.is_running:
                     self.start_algorithm()
                 elif action == "stop":
@@ -153,6 +126,40 @@ class MazeGame:
                 elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
                     self._apply_state(state)
+                elif action == "beautiful_maze" and not self.is_running:
+                    self.maze, state = generate_beautiful_maze(MAZE_SIZE)
+                    self._apply_state(state)
+                elif action == "set_nodes" and not self.is_running:
+                    # Khi click nút, xóa các nodes hiện tại và bắt đầu đặt lại
+                    if self.node_placement_mode is None:
+                        # Xóa nodes hiện tại và bắt đầu mode đặt start
+                        self.custom_start = None
+                        self.custom_end = None
+                        self.node_placement_mode = "start"
+                    else:
+                        # Nếu đang ở mode đặt node, thoát mode và giữ nodes đã đặt
+                        self.node_placement_mode = None
+                return
+        
+        # Check if clicking in maze area for node placement
+        if (self.node_placement_mode and not self.is_running and 
+            pos[0] >= MAZE_OFFSET_X and pos[0] < MAZE_OFFSET_X + MAZE_WIDTH and
+            pos[1] >= MAZE_OFFSET_Y and pos[1] < MAZE_OFFSET_Y + MAZE_HEIGHT):
+            
+            # Convert pixel coordinates to maze grid coordinates
+            col = (pos[0] - MAZE_OFFSET_X) // CELL_SIZE
+            row = (pos[1] - MAZE_OFFSET_Y) // CELL_SIZE
+            
+            # Check if click is within maze bounds and on empty cell
+            if (0 <= row < MAZE_SIZE and 0 <= col < MAZE_SIZE and 
+                self.maze[row][col] == 0):  # Empty cell
+                
+                if self.node_placement_mode == "start":
+                    self.custom_start = (row, col)
+                    self.node_placement_mode = "end"  # Switch to placing end node
+                elif self.node_placement_mode == "end":
+                    self.custom_end = (row, col) 
+                    self.node_placement_mode = None  # Done placing nodes
                 return
 
     def get_current_algorithm_name(self):
