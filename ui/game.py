@@ -17,12 +17,12 @@ from core.maze_generator import generate_maze, generate_beautiful_maze
 # Constants
 WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 800
-MAZE_SIZE = 25
-CELL_SIZE = 25
+MAZE_SIZE = 23
+CELL_SIZE = 23
 MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
 MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
 MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 100
+MAZE_OFFSET_Y = 60
 
 # Colors
 WHITE = (255, 255, 255)

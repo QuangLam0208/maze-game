@@ -301,12 +301,6 @@ class Renderer:
         info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
         text = self.font.render(info_text, True, main_color)
         self.screen.blit(text, (info_x, info_y))
-        
-        # Hiển thị mode đặt node
-        if hasattr(self.game, 'node_placement_mode') and self.game.node_placement_mode:
-            mode_text = f"Mode: Đặt {'Start Node' if self.game.node_placement_mode == 'start' else 'End Node'}"
-            mode_surface = self.font.render(mode_text, True, (255, 140, 0))
-            self.screen.blit(mode_surface, (info_x, info_y + 30))
 
     def draw_controls(self):
         """Vẽ các nút điều khiển"""
