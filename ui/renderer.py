@@ -316,7 +316,7 @@ class Renderer:
                     {"text": "Dừng", "color": RED, "action": "stop"},
                     {"text": "Reset Path", "color": GRAY, "action": "reset_path"},
                     {"text": "Reset", "color": DARK_GRAY, "action": "reset"},
-                    {"text": "Maze mới", "color": BLUE, "action": "new_maze"}]
+                    {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
                     {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
                     {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"}
         ]
