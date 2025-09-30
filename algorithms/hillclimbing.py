@@ -1,8 +1,9 @@
-import math, random
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 from .heuristic import DEFAULT_HEURISTIC
 
-def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristic=DEFAULT_HEURISTIC):
+
+def run_hill_climbing(game, heuristic=DEFAULT_HEURISTIC):
+    """Chạy Hill Climbing"""
     # Sử dụng custom start và end nếu có
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
@@ -17,61 +18,47 @@ def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristi
 
     # current_state = (cell, path, cost)
     current = (start, [start], heuristic(start, goal))
-    temperature = initial_temp
     step_count = 0
     visited_set = set()
 
-    while game.is_running and temperature > 1:
+    while game.is_running:
+        # animation & sự kiện
         step_count, ok = handle_frame(game, step_count)
         if not ok:
             return
 
         (x, y), path, cost = current
-
-        # Nếu đã thăm rồi → bỏ qua
-        if (x, y) in visited_set:
-            print(f"[Step {step_count}] Already visited {x, y}, stopping.")
-            game.is_running = False
-            break
-
-        visited_set.add((x, y))
         update_game_state(game, x, y, visited_set)
         step_count += 1
-        print(f"[Step {step_count}] At {x, y}, cost={cost:.2f}, temp={temperature:.2f}")
 
+
+        # Nếu tới Goal
         if check_goal(game, x, y, path):
-            break
+            return
 
-        # Sinh neighbors (chỉ lấy ô chưa thăm)
+        # Sinh neighbors
         neighbors = []
         for dx, dy in [(0,1),(1,0),(0,-1),(-1,0)]:
             nx, ny = x + dx, y + dy
-            if (
-                0 <= nx < len(game.maze) and 
-                0 <= ny < len(game.maze[0]) and 
-                game.maze[nx][ny] == 0 and 
-                (nx, ny) not in visited_set
-            ):
+            if (0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and 
+                game.maze[nx][ny] == 0 and (nx, ny) not in visited_set):
                 new_cell = (nx, ny)
                 neighbors.append((new_cell, path + [new_cell], heuristic(new_cell, goal)))
 
-        # Nếu hết đường → dừng luôn
         if not neighbors:
-            print(f"[Step {step_count}] Dead end at {x, y}, stopping.")
-            game.is_running = False
             break
 
-        # Chọn neighbor
+        # Tìm neighbor tốt nhất
         best_neighbor = min(neighbors, key=lambda n: n[2])
+
+        #state(current_cell, path, cost) ,state[2]: giá trị Heuristic
         if best_neighbor[2] < cost:
+            # Nếu tốt hơn thì nhận ngay
             current = best_neighbor
         else:
-            random_neighbor = random.choice(neighbors)
-            delta = random_neighbor[2] - cost
-            if random.random() < math.exp(-delta / temperature):
-                current = random_neighbor
+            # Không có neighbor nào tốt hơn thì dừng
+            break
 
-        temperature *= cooling_rate
-
+    # kết thúc
     game.is_running = False
     game.current_node = None

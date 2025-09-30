@@ -9,12 +9,22 @@ def manhattan_distance(pos1, pos2):
 
 def run_gbf(game):
     """Chạy Greedy Best-First Search, cập nhật trạng thái của MazeGame"""
+    # Sử dụng custom start và end nếu có
+    start_pos = getattr(game, 'custom_start', (0, 0))
+    if start_pos is None:
+        start_pos = (0, 0)
+    
+    goal_pos = getattr(game, 'custom_end', None)
+    if goal_pos is None:
+        goal = (len(game.maze) - 1, len(game.maze[0]) - 1)
+    else:
+        goal = goal_pos
+    
     # Priority queue: (heuristic_cost, x, y, path)
     # Sử dụng heuristic là khoảng cách Manhattan đến đích
-    goal = (len(game.maze) - 1, len(game.maze[0]) - 1)
-    start_heuristic = manhattan_distance((0, 0), goal)
+    start_heuristic = manhattan_distance(start_pos, goal)
     
-    priority_queue = [(start_heuristic, 0, 0, [])]
+    priority_queue = [(start_heuristic, start_pos[0], start_pos[1], [])]
     visited_set = set()
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
