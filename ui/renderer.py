@@ -87,6 +87,7 @@ class Renderer:
                 "gradient": "pink_orange",
                 "text_color": WHITE,
                 "algorithms": [
+                    {"name": "AND-OR Search", "desc": "Tìm kiếm với cấu trúc AND-OR"},
                     {"name": "Nondeterministic", "desc": "Hành động có nhiều kết quả"},
                     {"name": "Conformant", "desc": "Không quan sát, kế hoạch chắc chắn"},
                     {"name": "Contingency", "desc": "Kế hoạch rẽ nhánh theo quan sát"}
