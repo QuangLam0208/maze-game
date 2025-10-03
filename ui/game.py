@@ -11,19 +11,19 @@ from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
+from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
 
-
-from core.maze_generator import generate_maze
+from core.maze_generator import generate_maze, generate_beautiful_maze
 
 # Constants
 WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 800
-MAZE_SIZE = 25
-CELL_SIZE = 25
+MAZE_SIZE = 23
+CELL_SIZE = 23
 MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
 MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
 MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 100
+MAZE_OFFSET_Y = 60
 
 # Colors
 WHITE = (255, 255, 255)
@@ -37,6 +37,9 @@ class MazeGame:
         self.font = pygame.font.SysFont('arial', 20)
         self.title_font = pygame.font.SysFont('arial', 28)
         self.small_font = pygame.font.SysFont('arial', 16)
+        
+        self.history = [] #lưu lại các lần chạy
+        self.alg_name = "" 
         
         # Add maze dimensions as instance attributes
         self.MAZE_SIZE = MAZE_SIZE
@@ -58,6 +61,11 @@ class MazeGame:
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
         self.start_time = 0
+        
+        # Custom Start/End nodes
+        self.custom_start = (1, 1)  # Default start position  
+        self.custom_end = (MAZE_SIZE-2, MAZE_SIZE-2)  # Default end position
+        self.node_placement_mode = None  # None, "start", "end"
 
         self.maze, state = generate_maze(MAZE_SIZE)
         self._apply_state(state)
@@ -72,7 +80,8 @@ class MazeGame:
             "A* Search": run_astar,
             "Hill Climbing": run_hill_climbing,
             "Simulated Annealing": run_simulated_annealing,
-            "Beam Search": run_beam
+            "Beam Search": run_beam,
+            "Partial Observable": run_partial_observable_dfs
             # ... thêm các thuật toán khác
         }
 
@@ -86,6 +95,12 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+
+        # Nếu trước đó đang dùng partial-observable, xóa known_maze / visible_cells
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
 
     def handle_click(self, pos):
         """Xử lý click chuột"""
@@ -104,7 +119,8 @@ class MazeGame:
                 return
 
         # Check control buttons
-        actions = ["start", "stop", "reset", "new_maze"]
+        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes"]
+
         for i, action in enumerate(actions):
             if self.renderer.get_control_button_rect(i).collidepoint(pos):
                 if action == "start" and not self.is_running:
@@ -112,11 +128,46 @@ class MazeGame:
                 elif action == "stop":
                     self.is_running = False
                 elif action == "reset":
-                    self.maze, state = generate_maze(MAZE_SIZE)
-                    self._apply_state(state)
+                    self.reset()
+                elif action == "reset_path":
+                    self.reset_path()
                 elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
                     self._apply_state(state)
+                elif action == "beautiful_maze" and not self.is_running:
+                    self.maze, state = generate_beautiful_maze(MAZE_SIZE)
+                    self._apply_state(state)
+                elif action == "set_nodes" and not self.is_running:
+                    # Khi click nút, xóa các nodes hiện tại và bắt đầu đặt lại
+                    if self.node_placement_mode is None:
+                        # Xóa nodes hiện tại và bắt đầu mode đặt start
+                        self.custom_start = None
+                        self.custom_end = None
+                        self.node_placement_mode = "start"
+                    else:
+                        # Nếu đang ở mode đặt node, thoát mode và giữ nodes đã đặt
+                        self.node_placement_mode = None
+                return
+        
+        # Check if clicking in maze area for node placement
+        if (self.node_placement_mode and not self.is_running and 
+            pos[0] >= MAZE_OFFSET_X and pos[0] < MAZE_OFFSET_X + MAZE_WIDTH and
+            pos[1] >= MAZE_OFFSET_Y and pos[1] < MAZE_OFFSET_Y + MAZE_HEIGHT):
+            
+            # Convert pixel coordinates to maze grid coordinates
+            col = (pos[0] - MAZE_OFFSET_X) // CELL_SIZE
+            row = (pos[1] - MAZE_OFFSET_Y) // CELL_SIZE
+            
+            # Check if click is within maze bounds and on empty cell
+            if (0 <= row < MAZE_SIZE and 0 <= col < MAZE_SIZE and 
+                self.maze[row][col] == 0):  # Empty cell
+                
+                if self.node_placement_mode == "start":
+                    self.custom_start = (row, col)
+                    self.node_placement_mode = "end"  # Switch to placing end node
+                elif self.node_placement_mode == "end":
+                    self.custom_end = (row, col) 
+                    self.node_placement_mode = None  # Done placing nodes
                 return
 
     def get_current_algorithm_name(self):
@@ -169,3 +220,31 @@ class MazeGame:
 
         pygame.quit()
         sys.exit()
+
+    def reset(self):
+        """Reset toàn bộ maze về trắng"""
+        self.maze = [[0 for _ in range(self.MAZE_SIZE)] for _ in range(self.MAZE_SIZE)]
+        self.visited = set()
+        self.path = []
+        self.current_node = None
+        self.is_running = False
+        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+
+        # remove partial-observable artifacts so renderer will draw full maze
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
+            
+    def reset_path(self):
+        """Chỉ reset path và visited, giữ nguyên maze"""
+        self.visited = set()
+        self.path = []
+        self.current_node = None
+        self.is_running = False
+        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
