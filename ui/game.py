@@ -11,6 +11,7 @@ from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
+from algorithms.Unobservable import run_unobservable_dfs
 from algorithms.and_or_search import run_and_or_search
 from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
 
@@ -82,6 +83,7 @@ class MazeGame:
             "Hill Climbing": run_hill_climbing,
             "Simulated Annealing": run_simulated_annealing,
             "Beam Search": run_beam,
+            "Unobservable Search": run_unobservable_dfs,
             "AND-OR Search": run_and_or_search,
             "Partial Observable": run_partial_observable_dfs
             # ... thêm các thuật toán khác
@@ -143,10 +145,12 @@ class MazeGame:
                     self.reset_path()
                 elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
+                    self.clear_history()
                     self._apply_state(state)
                     self.default_start_end_node()  # Đặt lại start/end nodes về default
                 elif action == "beautiful_maze" and not self.is_running:
                     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
+                    self.clear_history()
                     self._apply_state(state)
                     self.default_start_end_node()  # Đặt lại start/end nodes về default
                 elif action == "set_nodes" and not self.is_running:
@@ -191,7 +195,6 @@ class MazeGame:
         return alg["name"]
 
     def start_algorithm(self):
-        """Bắt đầu chạy thuật toán"""
         if self.is_running:
             return
 
@@ -209,8 +212,29 @@ class MazeGame:
         self.stats["nodes_visited"] = 0
 
         alg_name = self.get_current_algorithm_name()
+        self.alg_name = alg_name   # nhớ lưu tên thuật toán
         if alg_name in self.algorithms:
             self.algorithms[alg_name](self)
+
+            # ⬇Sau khi thuật toán chạy xong mà không tìm thấy đích
+            if not self.path:  
+                self.is_running = False
+                elapsed_time = (time.time() - self.start_time) * 1000
+                self.stats["time"] = elapsed_time
+
+                if not hasattr(self, "history"):
+                    self.history = []
+
+                self.history.insert(0, {
+                    "name": self.alg_name,
+                    "nodes": self.stats["nodes_visited"],
+                    "length": 0,
+                    "time": f"{elapsed_time:.0f}ms",
+                    "status": "Not Found"
+                })
+
+                if len(self.history) > 5:
+                    self.history.pop()
         else:
             print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
             self.is_running = False
@@ -249,6 +273,8 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        
+        self.clear_history()
 
         # remove partial-observable artifacts so renderer will draw full maze
         if hasattr(self, "known_maze"):
@@ -264,6 +290,9 @@ class MazeGame:
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
         
+    def clear_history(self):
+        """Xóa toàn bộ dữ liệu đã lưu trong history"""
+        self.history = []
         if hasattr(self, "known_maze"):
             delattr(self, "known_maze")
         if hasattr(self, "visible_cells"):

@@ -88,7 +88,7 @@ class Renderer:
                 "text_color": WHITE,
                 "algorithms": [
                     {"name": "AND-OR Search", "desc": "Tìm kiếm với cấu trúc AND-OR"},
-                    {"name": "Unobservable", "desc": "Không quan sát"},
+                    {"name": "Unobservable Search", "desc": "Không quan sát"},
                     {"name": "Partial Observable", "desc": "Nhìn thấy một phần"}
                 ]
             },
@@ -310,16 +310,13 @@ class Renderer:
         start_y = 720
         spacing = 7  # Giảm spacing để vừa 6 buttons
         
-        buttons = [
-
-                    {"text": "Bắt đầu", "color": GREEN, "action": "start"},
+        buttons = [{"text": "Bắt đầu", "color": GREEN, "action": "start"},
                     {"text": "Dừng", "color": RED, "action": "stop"},
                     {"text": "Reset Path", "color": GRAY, "action": "reset_path"},
                     {"text": "Reset", "color": DARK_GRAY, "action": "reset"},
                     {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
                     {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
-                    {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"}
-        ]
+                    {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"}]
         
         for i, button in enumerate(buttons):
             x = start_x + i * (button_width + spacing)
