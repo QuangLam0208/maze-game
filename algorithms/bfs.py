@@ -3,7 +3,16 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame
 
 def run_bfs(game):
     """Chạy BFS, cập nhật trạng thái của MazeGame"""
-    queue = deque([(0, 0, [])])
+
+    game.alg_name = "BFS"
+
+    # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
+    start_pos = getattr(game, 'custom_start', (0, 0))
+    if start_pos is None:
+        start_pos = (0, 0)
+    start_x, start_y = start_pos
+    queue = deque([(start_x, start_y, [])])
+
     visited_set = set()
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
