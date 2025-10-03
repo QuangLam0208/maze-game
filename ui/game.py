@@ -12,6 +12,7 @@ from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
 from algorithms.and_or_search import run_and_or_search
+from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
 
 from core.maze_generator import generate_maze, generate_beautiful_maze
 
@@ -82,6 +83,7 @@ class MazeGame:
             "Simulated Annealing": run_simulated_annealing,
             "Beam Search": run_beam,
             "AND-OR Search": run_and_or_search
+            "Partial Observable": run_partial_observable_dfs
             # ... thêm các thuật toán khác
         }
 
@@ -102,6 +104,12 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+
+        # Nếu trước đó đang dùng partial-observable, xóa known_maze / visible_cells
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
 
     def handle_click(self, pos):
         """Xử lý click chuột"""
@@ -232,6 +240,7 @@ class MazeGame:
 
         pygame.quit()
         sys.exit()
+
     def reset(self):
         """Reset toàn bộ maze về trắng"""
         self.maze = [[0 for _ in range(self.MAZE_SIZE)] for _ in range(self.MAZE_SIZE)]
@@ -240,8 +249,13 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
-        
 
+        # remove partial-observable artifacts so renderer will draw full maze
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
+            
     def reset_path(self):
         """Chỉ reset path và visited, giữ nguyên maze"""
         self.visited = set()
@@ -249,3 +263,8 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")

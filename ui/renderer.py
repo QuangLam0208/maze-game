@@ -88,13 +88,12 @@ class Renderer:
                 "text_color": WHITE,
                 "algorithms": [
                     {"name": "AND-OR Search", "desc": "Tìm kiếm với cấu trúc AND-OR"},
-                    {"name": "Nondeterministic", "desc": "Hành động có nhiều kết quả"},
-                    {"name": "Conformant", "desc": "Không quan sát, kế hoạch chắc chắn"},
-                    {"name": "Contingency", "desc": "Kế hoạch rẽ nhánh theo quan sát"}
+                    {"name": "Unobservable", "desc": "Không quan sát"},
+                    {"name": "Partial Observable", "desc": "Nhìn thấy một phần"}
                 ]
             },
             {
-                "name": "Evolutionary Algorithms",
+                "name": "Constraint Satisfied Problem",
                 "gradient": "teal_lime",
                 "text_color": BLACK,
                 "algorithms": [
@@ -104,7 +103,7 @@ class Renderer:
                 ]
             },
             {
-                "name": "Machine Learning",
+                "name": "Coming Soon",
                 "gradient": "red_yellow",
                 "text_color": BLACK,
                 "algorithms": [
@@ -447,6 +446,9 @@ class Renderer:
         maze_bg = pygame.Rect(MAZE_OFFSET_X - 3, MAZE_OFFSET_Y - 3, 
                             self.game.MAZE_WIDTH + 6, self.game.MAZE_HEIGHT + 6)
         pygame.draw.rect(self.screen, BLACK, maze_bg)
+
+        # Dùng known_maze nếu có, ngược lại dùng maze đầy đủ
+        maze = getattr(self.game, "known_maze", self.game.maze)
         
         for i in range(self.game.MAZE_SIZE):
             for j in range(self.game.MAZE_SIZE):
@@ -454,8 +456,13 @@ class Renderer:
                 y = MAZE_OFFSET_Y + i * self.game.CELL_SIZE
                 rect = pygame.Rect(x, y, self.game.CELL_SIZE, self.game.CELL_SIZE)
                 
+                cell = maze[i][j]
+
                 # Determine cell color
-                if self.game.maze[i][j] == 1:  # Wall
+                # Determine cell color
+                if cell == -1:  # Chưa biết
+                    color = GRAY
+                elif cell == 1:  # Wall
                     color = BLACK
                 elif (hasattr(self.game, 'custom_start') and self.game.custom_start is not None and 
                       (i, j) == self.game.custom_start):  # Custom Start
@@ -475,6 +482,14 @@ class Renderer:
                 pygame.draw.rect(self.screen, color, rect)
                 if color != BLACK:  # Don't draw border on walls
                     pygame.draw.rect(self.screen, DARK_GRAY, rect, 1)
+
+        # Highlight tầm nhìn nếu có
+        if hasattr(self.game, "visible_cells"):
+            for (i, j) in self.game.visible_cells:
+                x = MAZE_OFFSET_X + j * self.game.CELL_SIZE
+                y = MAZE_OFFSET_Y + i * self.game.CELL_SIZE
+                rect = pygame.Rect(x, y, self.game.CELL_SIZE, self.game.CELL_SIZE)
+                pygame.draw.rect(self.screen, (0, 255, 0), rect, 2)  # viền xanh
 
     def draw_all(self):
         """Vẽ tất cả các thành phần giao diện"""
