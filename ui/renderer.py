@@ -87,7 +87,7 @@ class Renderer:
                 "gradient": "pink_orange",
                 "text_color": WHITE,
                 "algorithms": [
-                    {"name": "Nondeterministic", "desc": "Hành động không chắc chắn"},
+                    {"name": "AND-OR Search", "desc": "Tìm kiếm với cấu trúc AND-OR"},
                     {"name": "Unobservable", "desc": "Không quan sát"},
                     {"name": "Partial Observable", "desc": "Nhìn thấy một phần"}
                 ]

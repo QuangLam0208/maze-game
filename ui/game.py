@@ -11,6 +11,7 @@ from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
+from algorithms.and_or_search import run_and_or_search
 from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
 
 from core.maze_generator import generate_maze, generate_beautiful_maze
@@ -63,8 +64,8 @@ class MazeGame:
         self.start_time = 0
         
         # Custom Start/End nodes
-        self.custom_start = (1, 1)  # Default start position  
-        self.custom_end = (MAZE_SIZE-2, MAZE_SIZE-2)  # Default end position
+        self.custom_start = (0, 0)  # Default start position
+        self.custom_end = (MAZE_SIZE-1, MAZE_SIZE-1)  # Default end position
         self.node_placement_mode = None  # None, "start", "end"
 
         self.maze, state = generate_maze(MAZE_SIZE)
@@ -81,11 +82,19 @@ class MazeGame:
             "Hill Climbing": run_hill_climbing,
             "Simulated Annealing": run_simulated_annealing,
             "Beam Search": run_beam,
+            "AND-OR Search": run_and_or_search
             "Partial Observable": run_partial_observable_dfs
             # ... thêm các thuật toán khác
         }
 
     # --- Event Handling & Algorithms ---
+    def default_start_end_node(self):
+        """Đặt lại start và end node về vị trí mặc định"""
+        # Xóa nodes hiện tại nếu có
+        self.custom_start = (0, 0)  # Default start position
+        self.custom_end = (MAZE_SIZE-1, MAZE_SIZE-1)  # Default end position
+        self.node_placement_mode = None  # Tắt mode đặt node
+    
     def _apply_state(self, state):
         """Áp dụng trạng thái cho mê cung"""
         self.start = state.get('start', (0, 0))
@@ -129,15 +138,20 @@ class MazeGame:
                     self.is_running = False
                 elif action == "reset":
                     self.reset()
+                    self.default_start_end_node()  # Đặt lại start/end nodes về default
                 elif action == "reset_path":
                     self.reset_path()
                 elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
                     self._apply_state(state)
+                    self.default_start_end_node()  # Đặt lại start/end nodes về default
                 elif action == "beautiful_maze" and not self.is_running:
                     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
                     self._apply_state(state)
+                    self.default_start_end_node()  # Đặt lại start/end nodes về default
                 elif action == "set_nodes" and not self.is_running:
+                    # Reset path khi bắt đầu đặt nodes
+                    self.reset_path()
                     # Khi click nút, xóa các nodes hiện tại và bắt đầu đặt lại
                     if self.node_placement_mode is None:
                         # Xóa nodes hiện tại và bắt đầu mode đặt start
@@ -179,6 +193,12 @@ class MazeGame:
     def start_algorithm(self):
         """Bắt đầu chạy thuật toán"""
         if self.is_running:
+            return
+
+        # Kiểm tra xem cả start và end nodes đã được đặt chưa
+        if not hasattr(self, 'custom_start') or not hasattr(self, 'custom_end') or \
+           self.custom_start is None or self.custom_end is None:
+            print("⚠ Cần đặt đủ cả Start và End nodes trước khi chạy thuật toán!")
             return
 
         self.is_running = True
