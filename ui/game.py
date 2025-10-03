@@ -82,7 +82,7 @@ class MazeGame:
             "Hill Climbing": run_hill_climbing,
             "Simulated Annealing": run_simulated_annealing,
             "Beam Search": run_beam,
-            "AND-OR Search": run_and_or_search
+            "AND-OR Search": run_and_or_search,
             "Partial Observable": run_partial_observable_dfs
             # ... thêm các thuật toán khác
         }
