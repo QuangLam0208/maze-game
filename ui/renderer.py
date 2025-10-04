@@ -317,7 +317,7 @@ class Renderer:
                     {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
                     {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
                     {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
-                    {"text": "Wall Node", "color": ORANGE, "action": "set_wall"}]
+                    {"text": "Wall Node", "color": ORANGE, "action": "set_wall"},
                     {"text": "Thống kê", "color": CYAN, "action": "statistics"}]
         
         for i, button in enumerate(buttons):
