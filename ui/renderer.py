@@ -99,7 +99,7 @@ class Renderer:
                 "algorithms": [
                     {"name": "Genetic Algorithm", "desc": "Tiến hóa tự nhiên"},
                     {"name": "Ant Colony Optimization", "desc": "Hành vi kiến"},
-                    {"name": "Particle Swarm Optimization", "desc": "Đàn chim"}
+                    {"name": "Arc Consistency Algorithm 3", "desc": "Thuật toán duy trì tính nhất quán"}
                 ]
             },
             {
