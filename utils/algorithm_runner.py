@@ -55,7 +55,7 @@ def handle_frame(game, step_count, max_steps_per_frame=3, delay=80):
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return
+                    return step_count, False  # Sửa: thêm step_count
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         stop_rect = pygame.Rect(110, 720, 80, 35)
                         if stop_rect.collidepoint(event.pos):

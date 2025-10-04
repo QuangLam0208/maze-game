@@ -14,6 +14,7 @@ from algorithms.hillclimbing import run_hill_climbing
 from algorithms.Unobservable import run_unobservable_dfs
 from algorithms.and_or_search import run_and_or_search
 from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
+from algorithms.backtracking import run_backtracking
 
 from core.maze_generator import generate_maze, generate_beautiful_maze
 
@@ -85,7 +86,8 @@ class MazeGame:
             "Beam Search": run_beam,
             "Unobservable Search": run_unobservable_dfs,
             "AND-OR Search": run_and_or_search,
-            "Partial Observable": run_partial_observable_dfs
+            "Partial Observable": run_partial_observable_dfs,
+            "Backtracking": run_backtracking
             # ... thêm các thuật toán khác
         }
 

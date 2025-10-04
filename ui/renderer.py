@@ -97,6 +97,7 @@ class Renderer:
                 "gradient": "teal_lime",
                 "text_color": BLACK,
                 "algorithms": [
+                    {"name": "Backtracking", "desc": "Quay lui tìm kiếm"},
                     {"name": "Genetic Algorithm", "desc": "Tiến hóa tự nhiên"},
                     {"name": "Ant Colony Optimization", "desc": "Hành vi kiến"},
                     {"name": "Particle Swarm Optimization", "desc": "Đàn chim"}
