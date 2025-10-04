@@ -3,10 +3,12 @@ import pygame
 
 def run_forward_checking(game):
     """
-    Forward Checking (CSP style):
-    - Mỗi bước đi coi như gán giá trị cho biến.
-    - Sau khi gán, cập nhật miền giá trị của biến còn lại.
-    - Nếu miền rỗng -> backtrack.
+    Forward Checking (CSP style - domain động + restore):
+    - Biến: mỗi ô trong maze.
+    - Domain: tập các ô trống còn khả thi (ban đầu = all_cells).
+    - Khi gán (visit node): loại ô đó khỏi domain của tất cả biến khác.
+    - Nếu có biến nào domain rỗng (trừ goal) -> backtrack sớm.
+    - Khi backtrack: restore domain.
     """
 
     game.alg_name = "Forward Checking (CSP)"
@@ -17,13 +19,18 @@ def run_forward_checking(game):
     start_x, start_y = start_pos
     goal_pos = getattr(game, 'custom_end', (len(game.maze)-1, len(game.maze[0])-1))
 
-    # Domain = tất cả cell hợp lệ
-    domain = {(i, j) for i in range(len(game.maze))
-                        for j in range(len(game.maze[0])) if game.maze[i][j] == 0}
-
-    visited = set()
     step_count = 0
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
+    # Ban đầu: all_cells = mọi ô trống trong maze
+    all_cells = {(i, j) for i in range(len(game.maze))
+                           for j in range(len(game.maze[0]))
+                           if game.maze[i][j] == 0}
+
+    # Domain động: mỗi biến (cell) có domain riêng = all_cells ban đầu
+    domains = {cell: set(all_cells) for cell in all_cells}
+
+    visited = set()
 
     def forward_check(x, y, path):
         nonlocal step_count
@@ -36,41 +43,58 @@ def run_forward_checking(game):
         if not ok:
             return False
 
-        # Gán giá trị cho biến hiện tại
+        # Gán giá trị cho biến (visit node)
         update_game_state(game, x, y, visited)
         game.draw_frame()
         pygame.time.wait(80)
 
-        # Check goal
+        # Nếu tới goal thì kết thúc
         if check_goal(game, x, y, path):
             return True
 
         visited.add((x, y))
 
-        # Forward checking: tính miền còn lại của biến kế
-        possible_moves = []
+        # --- Forward checking toàn cục ---
+        pruned = []
+        dead = False
+        for var in domains:
+            if var not in visited:  # chỉ xét biến chưa gán
+                if (x, y) in domains[var]:
+                    domains[var].remove((x, y))
+                    pruned.append((var, (x, y)))
+                # Nếu domain rỗng và không phải goal -> dead-end
+                if not domains[var] and var != goal_pos:
+                    dead = True
+                    break
+
+        if dead:
+            # Restore domain
+            for (var, val) in pruned:
+                domains[var].add(val)
+            visited.remove((x, y))
+            if (x, y) in game.visited:
+                game.visited.remove((x, y))
+                game.draw_frame()
+                pygame.time.wait(50)
+            return False
+
+        # --- Sinh candidate moves (neighbor 4 hướng) ---
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
-            if (nx, ny) in domain and (nx, ny) not in visited:
-                # Kiểm tra miền của (nx,ny): còn ít nhất 1 neighbor khả thi sau nó?
-                future = [
-                    (nx + ddx, ny + ddy)
-                    for ddx, ddy in directions
-                    if (nx + ddx, ny + ddy) in domain and (nx + ddx, ny + ddy) not in visited
-                ]
-                if future:  # còn miền hợp lệ
-                    possible_moves.append((nx, ny))
+            if (nx, ny) in domains and (nx, ny) not in visited:
+                if forward_check(nx, ny, path + [(x, y)]):
+                    return True
 
-        # Thử gán cho từng biến kế tiếp
-        for (nx, ny) in possible_moves:
-            if forward_check(nx, ny, path + [(x, y)]):
-                return True
-
-        # Nếu không thành công -> backtrack
+        # --- Backtrack ---
         visited.remove((x, y))
         if (x, y) in game.visited:
-            game.visited.remove((x, y))  # node quay lại trắng
+            game.visited.remove((x, y))
             game.draw_frame()
+            pygame.time.wait(50)
+
+        # Restore domain khi backtrack
+        for (var, val) in pruned:
+            domains[var].add(val)
 
         return False
 
