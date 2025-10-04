@@ -68,7 +68,7 @@ class MazeGame:
         # Custom Start/End nodes
         self.custom_start = (0, 0)  # Default start position
         self.custom_end = (MAZE_SIZE-1, MAZE_SIZE-1)  # Default end position
-        self.node_placement_mode = None  # None, "start", "end"
+        self.node_placement_mode = None  # None, "start", "end", "wall"
 
         self.maze, state = generate_maze(MAZE_SIZE)
         self._apply_state(state)
@@ -132,7 +132,7 @@ class MazeGame:
                 return
 
         # Check control buttons
-        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes"]
+        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall"]
 
         for i, action in enumerate(actions):
             if self.renderer.get_control_button_rect(i).collidepoint(pos):
@@ -142,31 +142,33 @@ class MazeGame:
                     self.is_running = False
                 elif action == "reset":
                     self.reset()
-                    self.default_start_end_node()  # Đặt lại start/end nodes về default
+                    self.default_start_end_node()
                 elif action == "reset_path":
                     self.reset_path()
                 elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
                     self.clear_history()
                     self._apply_state(state)
-                    self.default_start_end_node()  # Đặt lại start/end nodes về default
+                    self.default_start_end_node()
                 elif action == "beautiful_maze" and not self.is_running:
                     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
                     self.clear_history()
                     self._apply_state(state)
-                    self.default_start_end_node()  # Đặt lại start/end nodes về default
+                    self.default_start_end_node()
                 elif action == "set_nodes" and not self.is_running:
-                    # Reset path khi bắt đầu đặt nodes
                     self.reset_path()
-                    # Khi click nút, xóa các nodes hiện tại và bắt đầu đặt lại
-                    if self.node_placement_mode is None:
-                        # Xóa nodes hiện tại và bắt đầu mode đặt start
+                    if self.node_placement_mode in ("start", "end"):
+                        self.node_placement_mode = None
+                    else:
                         self.custom_start = None
                         self.custom_end = None
                         self.node_placement_mode = "start"
-                    else:
-                        # Nếu đang ở mode đặt node, thoát mode và giữ nodes đã đặt
+                elif action == "set_wall" and not self.is_running:
+                    self.reset_path()
+                    if self.node_placement_mode == "wall":
                         self.node_placement_mode = None
+                    else:
+                        self.node_placement_mode = "wall"
                 return
         
         # Check if clicking in maze area for node placement
@@ -178,17 +180,24 @@ class MazeGame:
             col = (pos[0] - MAZE_OFFSET_X) // CELL_SIZE
             row = (pos[1] - MAZE_OFFSET_Y) // CELL_SIZE
             
-            # Check if click is within maze bounds and on empty cell
-            if (0 <= row < MAZE_SIZE and 0 <= col < MAZE_SIZE and 
-                self.maze[row][col] == 0):  # Empty cell
-                
+            clicked_node = (row, col)
+
+            if 0 <= row < MAZE_SIZE and 0 <= col < MAZE_SIZE:
                 if self.node_placement_mode == "start":
-                    self.custom_start = (row, col)
-                    self.node_placement_mode = "end"  # Switch to placing end node
+                    if self.maze[row][col] == 0:
+                        self.custom_start = clicked_node
+                        self.node_placement_mode = "end"
                 elif self.node_placement_mode == "end":
-                    self.custom_end = (row, col) 
-                    self.node_placement_mode = None  # Done placing nodes
+                    if self.maze[row][col] == 0 and clicked_node != self.custom_start:
+                        self.custom_end = clicked_node
+                        self.node_placement_mode = None
+                elif self.node_placement_mode == "wall":
+                    # Không cho phép thay đổi điểm start/end
+                    if clicked_node != self.custom_start and clicked_node != self.custom_end:
+                        # Chuyển đổi giữa tường và đường đi (1 và 0)
+                        self.maze[row][col] = 1 - self.maze[row][col]
                 return
+
 
     def get_current_algorithm_name(self):
         """Lấy tên thuật toán đang chọn"""
