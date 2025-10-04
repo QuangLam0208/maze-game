@@ -316,7 +316,8 @@ class Renderer:
                     {"text": "Reset", "color": DARK_GRAY, "action": "reset"},
                     {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
                     {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
-                    {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"}]
+                    {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
+                    {"text": "Thống kê", "color": CYAN, "action": "statistics"}]
         
         for i, button in enumerate(buttons):
             x = start_x + i * (button_width + spacing)
