@@ -456,7 +456,6 @@ class Renderer:
                 cell = maze[i][j]
 
                 # Determine cell color
-                # Determine cell color
                 if cell == -1:  # Chưa biết
                     color = GRAY
                 elif cell == 1:  # Wall
