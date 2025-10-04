@@ -1,6 +1,12 @@
 import pygame
 import sys
 import time
+import os
+from datetime import datetime
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
@@ -15,6 +21,9 @@ from algorithms.unobservable import run_unobservable_dfs
 from algorithms.and_or_search import run_and_or_search
 from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
 from algorithms.forward_checking import run_forward_checking
+from algorithms.AC3 import run_ac3_csp
+
+from PIL import Image, ImageDraw, ImageFont
 
 from core.maze_generator import generate_maze, generate_beautiful_maze
 
@@ -88,6 +97,7 @@ class MazeGame:
             "Nondeterministic": run_and_or_search,
             "Partial Observable": run_partial_observable_dfs,
             "Forward Checking": run_forward_checking
+            "Arc Consistency Algorithm 3": run_ac3_csp,
             # ... thêm các thuật toán khác
         }
 
@@ -132,7 +142,7 @@ class MazeGame:
                 return
 
         # Check control buttons
-        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall"]
+        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall", "statistics"]
 
         for i, action in enumerate(actions):
             if self.renderer.get_control_button_rect(i).collidepoint(pos):
@@ -169,6 +179,8 @@ class MazeGame:
                         self.node_placement_mode = None
                     else:
                         self.node_placement_mode = "wall"
+                elif action == "statistics":
+                    self.show_statistics()
                 return
         
         # Check if clicking in maze area for node placement
@@ -276,6 +288,7 @@ class MazeGame:
         pygame.quit()
         sys.exit()
 
+
     def reset(self):
         """Reset toàn bộ maze về trắng"""
         self.maze = [[0 for _ in range(self.MAZE_SIZE)] for _ in range(self.MAZE_SIZE)]
@@ -308,3 +321,82 @@ class MazeGame:
             delattr(self, "known_maze")
         if hasattr(self, "visible_cells"):
             delattr(self, "visible_cells")
+            
+    def show_statistics(self):
+        if not self.history:
+            print("Chưa có dữ liệu để thống kê!")
+            return
+
+        # Giữ kết quả mới nhất cho từng thuật toán
+        unique = {}
+        for entry in reversed(self.history):
+            unique[entry["name"]] = entry
+        data = list(unique.values())
+
+        # Sắp xếp theo tên để đồ thị ổn định
+        data.sort(key=lambda x: x["name"])
+
+        algos = [d["name"] for d in data]
+        nodes = [d["nodes"] for d in data]
+        
+        # Xử lý time an toàn hơn
+        times = []
+        for d in data:
+            time_str = str(d["time"]).replace("ms", "").strip()
+            try:
+                times.append(float(time_str))
+            except ValueError:
+                times.append(0)
+
+        # Sử dụng backend Agg để không tạo cửa sổ tương tác
+        
+        fig = plt.figure(figsize=(12, 5))
+
+        # Biểu đồ Nodes
+        ax1 = plt.subplot(1, 2, 1)
+        bars1 = ax1.bar(algos, nodes, color="skyblue", edgecolor='navy', alpha=0.7)
+        ax1.set_title("Nodes đã thăm", fontsize=12, fontweight='bold')
+        ax1.set_ylabel("Số lượng nodes")
+        ax1.grid(axis='y', alpha=0.3)
+        ax1.tick_params(axis='x', rotation=0)
+        
+        # Thêm giá trị lên cột
+        for bar in bars1:
+            height = bar.get_height()
+            ax1.text(bar.get_x() + bar.get_width()/2., height,
+                    f'{int(height)}',
+                    ha='center', va='bottom', fontsize=9)
+
+        # Biểu đồ Time
+        ax2 = plt.subplot(1, 2, 2)
+        bars2 = ax2.bar(algos, times, color="salmon", edgecolor='darkred', alpha=0.7)
+        ax2.set_title("Thời gian thực thi", fontsize=12, fontweight='bold')
+        ax2.set_ylabel("Thời gian (ms)")
+        ax2.grid(axis='y', alpha=0.3)
+        ax2.tick_params(axis='x', rotation=0)
+        
+        # Thêm giá trị lên cột
+        for bar in bars2:
+            height = bar.get_height()
+            ax2.text(bar.get_x() + bar.get_width()/2., height,
+                    f'{height:.1f}',
+                    ha='center', va='bottom', fontsize=9)
+
+        plt.suptitle("Thống kê So sánh Thuật toán", 
+                     fontsize=14, fontweight='bold')
+        plt.tight_layout()
+        
+        # Tạo thư mục nếu chưa có
+        stats_dir = "assets/pics/statics"
+        os.makedirs(stats_dir, exist_ok=True)
+        
+        # Lưu ra file với timestamp để không ghi đè
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        stats_file = os.path.join(stats_dir, f"statistics_{timestamp}.png")
+        
+        plt.savefig(stats_file, dpi=100, bbox_inches='tight')
+        plt.close(fig)
+        
+        # Mở file bằng trình xem ảnh mặc định
+        if os.name == 'nt':  # Windows
+            os.startfile(stats_file)

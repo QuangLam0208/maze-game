@@ -99,7 +99,7 @@ class Renderer:
                 "algorithms": [
                     {"name": "Backtracking", "desc": "Thử và sai, quay lui khi vi phạm"},
                     {"name": "Forward Checking", "desc": "Cắt tỉa miền giá trị sau mỗi gán"},
-                    {"name": "Arc Consistency (AC-3)", "desc": "Duy trì arc-consistency toàn cục"}
+                    {"name": "Arc Consistency Algorithm 3", "desc": "Thuật toán duy trì tính nhất quán"}
                 ]
             },
             {
@@ -318,6 +318,7 @@ class Renderer:
                     {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
                     {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
                     {"text": "Wall Node", "color": ORANGE, "action": "set_wall"}]
+                    {"text": "Thống kê", "color": CYAN, "action": "statistics"}]
         
         for i, button in enumerate(buttons):
             x = start_x + i * (button_width + spacing)
