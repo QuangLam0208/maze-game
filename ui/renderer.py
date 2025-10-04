@@ -87,7 +87,7 @@ class Renderer:
                 "gradient": "pink_orange",
                 "text_color": WHITE,
                 "algorithms": [
-                    {"name": "AND-OR Search", "desc": "Tìm kiếm với cấu trúc AND-OR"},
+                    {"name": "Nondeterministic", "desc": "Tìm kiếm với cấu trúc AND-OR"},
                     {"name": "Unobservable Search", "desc": "Không quan sát"},
                     {"name": "Partial Observable", "desc": "Nhìn thấy một phần"}
                 ]
@@ -97,9 +97,9 @@ class Renderer:
                 "gradient": "teal_lime",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "Genetic Algorithm", "desc": "Tiến hóa tự nhiên"},
-                    {"name": "Ant Colony Optimization", "desc": "Hành vi kiến"},
-                    {"name": "Particle Swarm Optimization", "desc": "Đàn chim"}
+                    {"name": "Backtracking", "desc": "Thử và sai, quay lui khi vi phạm"},
+                    {"name": "Forward Checking", "desc": "Cắt tỉa miền giá trị sau mỗi gán"},
+                    {"name": "Arc Consistency (AC-3)", "desc": "Duy trì arc-consistency toàn cục"}
                 ]
             },
             {
@@ -107,9 +107,9 @@ class Renderer:
                 "gradient": "red_yellow",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "Q-Learning", "desc": "Học tăng cường"},
-                    {"name": "Neural Network Path", "desc": "Mạng neural"},
-                    {"name": "Random Forest Path", "desc": "Ensemble learning"}
+                    {"name": "", "desc": ""},
+                    {"name": "", "desc": ""},
+                    {"name": "", "desc": ""}
                 ]
             }
         ]

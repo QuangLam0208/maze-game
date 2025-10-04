@@ -84,7 +84,7 @@ class MazeGame:
             "Simulated Annealing": run_simulated_annealing,
             "Beam Search": run_beam,
             "Unobservable Search": run_unobservable_dfs,
-            "AND-OR Search": run_and_or_search,
+            "Nondeterministic": run_and_or_search,
             "Partial Observable": run_partial_observable_dfs
             # ... thêm các thuật toán khác
         }
