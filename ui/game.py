@@ -11,7 +11,7 @@ from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
-from algorithms.Unobservable import run_unobservable_dfs
+from algorithms.unobservable import run_unobservable_dfs
 from algorithms.and_or_search import run_and_or_search
 from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
 from algorithms.forward_checking import run_forward_checking
