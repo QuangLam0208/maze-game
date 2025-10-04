@@ -96,7 +96,7 @@ class MazeGame:
             "Unobservable Search": run_unobservable_dfs,
             "Nondeterministic": run_and_or_search,
             "Partial Observable": run_partial_observable_dfs,
-            "Forward Checking": run_forward_checking
+            "Forward Checking": run_forward_checking,
             "Arc Consistency Algorithm 3": run_ac3_csp,
             # ... thêm các thuật toán khác
         }
