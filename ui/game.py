@@ -64,6 +64,7 @@ class MazeGame:
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
         self.start_time = 0
+        self.backtracked_nodes = set()  # Lưu các node đã backtrack
         
         # Custom Start/End nodes
         self.custom_start = (0, 0)  # Default start position
@@ -108,6 +109,7 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.backtracked_nodes = set()
 
         # Nếu trước đó đang dùng partial-observable, xóa known_maze / visible_cells
         if hasattr(self, "known_maze"):
@@ -275,6 +277,7 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.backtracked_nodes = set()
         
         self.clear_history()
 
@@ -291,6 +294,7 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.backtracked_nodes = set()
         
     def clear_history(self):
         """Xóa toàn bộ dữ liệu đã lưu trong history"""

@@ -20,7 +20,9 @@ def run_backtracking(game):
     path = [start_pos]
     directions_tried = [0]  # Index của direction tiếp theo cần thử cho mỗi node trong path
     global_visited = set()  # Tất cả nodes đã thăm (hiển thị màu xanh nhạt)
-    backtracked_nodes = set()  # Nodes đã backtrack (có thể hiển thị màu khác)
+    
+    # Clear và khởi tạo backtracked_nodes cho thuật toán mới
+    game.backtracked_nodes = set()  # Nodes đã backtrack (hiển thị màu xám)
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Right, Down, Left, Up
     
     step_count = 0
@@ -70,6 +72,9 @@ def run_backtracking(game):
         # Cập nhật trạng thái node hiện tại
         update_game_state(game, x, y, global_visited)
         
+        # Cập nhật game.path để phản ánh current path trong backtracking
+        game.path = list(path)
+        
         # Kiểm tra goal
         if current_pos == goal_pos:
             if check_goal(game, x, y, path):
@@ -108,18 +113,11 @@ def run_backtracking(game):
                 removed_pos = path.pop()
                 directions_tried.pop()  # Xóa tracking cho node bị xóa
                 
-                # Thêm vào backtracked_nodes để có thể hiển thị khác màu
-                backtracked_nodes.add(removed_pos)
+                # Thêm vào backtracked_nodes để hiển thị màu xám
+                game.backtracked_nodes.add(removed_pos)
                 
-                # KHÔNG xóa visual - giữ lại tất cả nodes đã thăm
-                # Chỉ xóa khỏi path nhưng vẫn giữ trong visited để hiển thị
-                # if removed_pos in game.visited:
-                #     game.visited.discard(removed_pos)
-                if removed_pos in game.path:
-                    game.path.remove(removed_pos)
-                    
-                # Đánh dấu là node đã backtrack (có thể dùng màu khác)
-                # game.visited vẫn giữ node này để hiển thị màu "đã thăm"
+                # Cập nhật game.path để phản ánh path mới sau khi backtrack
+                game.path = list(path)
             else:
                 # Không còn đường để backtrack
                 print("Không tìm thấy đường đi!")

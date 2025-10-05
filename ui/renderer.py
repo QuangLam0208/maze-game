@@ -457,7 +457,6 @@ class Renderer:
                 cell = maze[i][j]
 
                 # Determine cell color
-                # Determine cell color
                 if cell == -1:  # Chưa biết
                     color = GRAY
                 elif cell == 1:  # Wall
@@ -470,9 +469,9 @@ class Renderer:
                     color = RED
                 elif self.game.current_node and self.game.current_node == (i, j):  # Current node
                     color = PINK
-                elif (i, j) in self.game.path:  # Path
+                elif (i, j) in self.game.path:  # Path (màu vàng - nhánh đang chạy)
                     color = YELLOW
-                elif (i, j) in self.game.visited:  # Visited
+                elif (i, j) in self.game.visited:  # Visited (màu xanh nhạt)
                     color = LIGHT_BLUE
                 else:  # Empty
                     color = WHITE
