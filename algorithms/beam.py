@@ -32,7 +32,10 @@ def run_beam(game, beam_width=3):
     step_count = 0
 
     while current_beam and game.is_running:
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
@@ -46,6 +49,10 @@ def run_beam(game, beam_width=3):
                 
             # Cập nhật trạng thái game cho node hiện tại
             update_game_state(game, x, y, visited_set)
+            
+            # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+            game.path = current_path + [(x, y)]
+            
             step_count += 1
 
             # Kiểm tra đích

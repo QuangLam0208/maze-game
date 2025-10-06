@@ -23,7 +23,10 @@ def run_ucs(game, cost_func=DEFAULT_COST):
     step_count = 0
 
     while pq and game.is_running:
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
@@ -33,6 +36,10 @@ def run_ucs(game, cost_func=DEFAULT_COST):
             continue
 
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = current_path + [(x, y)]
+        
         step_count += 1
 
         # Check goal

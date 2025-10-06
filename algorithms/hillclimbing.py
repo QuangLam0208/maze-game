@@ -26,14 +26,20 @@ def run_hill_climbing(game, heuristic=DEFAULT_HEURISTIC):
 
     while game.is_running:
         # animation & sự kiện
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
         (x, y), path, cost = current
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = path
+        
         step_count += 1
-
 
         # Nếu tới Goal
         if check_goal(game, x, y, path):

@@ -34,7 +34,10 @@ def run_gbf(game):
     step_count = 0
 
     while priority_queue and game.is_running:
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
@@ -46,6 +49,10 @@ def run_gbf(game):
 
         # Cập nhật trạng thái game
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = current_path + [(x, y)]
+        
         step_count += 1
 
         # Kiểm tra đích

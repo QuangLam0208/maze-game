@@ -43,7 +43,10 @@ def run_and_or_search(game):
 
     while queue and game.is_running:
         # Animation & sự kiện
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
         
@@ -56,6 +59,10 @@ def run_and_or_search(game):
             
         # Cập nhật trạng thái
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = current_node.path
+        
         step_count += 1
         
         # Kiểm tra goal

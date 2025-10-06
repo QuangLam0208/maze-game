@@ -34,12 +34,18 @@ def Recursive_DLS(game, x, y, current_path, visited_set, limit, step_count):
             return None
         
     # animation & sự kiện   
-    step_count, ok = handle_frame(game, step_count)
+    result = handle_frame(game, step_count)
+    if result is None:
+        return None
+    step_count, ok = result
     if not ok:
         return None
 
     # cập nhật trạng thái node hiện tại
     update_game_state(game, x, y, visited_set)
+    
+    # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+    game.path = current_path + [(x, y)]
 
     # Nếu tới Goal
     if check_goal(game, x, y, current_path):
