@@ -17,7 +17,7 @@ from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
-from algorithms.unobservable import run_unobservable_dfs
+from algorithms.Unobservable import run_unobservable_dfs
 from algorithms.and_or_search import run_and_or_search
 from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
 from algorithms.forward_checking import run_forward_checking
@@ -30,8 +30,8 @@ from core.maze_generator import generate_maze, generate_beautiful_maze
 # Constants
 WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 800
-MAZE_SIZE = 23
-CELL_SIZE = 23
+MAZE_SIZE = 25
+CELL_SIZE = 25
 MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
 MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
 MAZE_OFFSET_X = 400
