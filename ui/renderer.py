@@ -366,9 +366,23 @@ class Renderer:
             text = self.small_font.render(button["text"], True, WHITE)
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
+        
+        # Nút QUIT 
+        quit_width = 3 * button_width + 2 * spacing_x  # 3 nút + 2 khoảng cách
+        quit_height = button_height
+        quit_x = start_x
+        quit_y = start_y + 3 * (button_height + spacing_y)  # Dưới 3 hàng nút
+        quit_rect = pygame.Rect(quit_x, quit_y, quit_width, quit_height)
+        
+        pygame.draw.rect(self.screen, (220, 20, 60), quit_rect, border_radius=self.BUTTON_RADIUS)  # Crimson Red
+        pygame.draw.rect(self.screen, BLACK, quit_rect, 1, border_radius=self.BUTTON_RADIUS)
+        
+        quit_text = self.font.render("QUIT", True, WHITE)
+        quit_text_rect = quit_text.get_rect(center=quit_rect.center)
+        self.screen.blit(quit_text, quit_text_rect)
     
     def get_control_button_rect(self, i):
-        """Trả về vị trí (Rect) của nút điều khiển thứ i — cố định dưới vùng 4 hàng thuật toán"""
+        """Trả về vị trí (Rect) của nút điều khiển thứ i"""
         button_width = 100
         button_height = 40
         cols = 3
@@ -377,17 +391,25 @@ class Renderer:
 
         start_x = 40
 
-        group_rows = 3          # 6 nhóm (2 cột x 3 hàng)
-        max_algorithms = 4      # giả định luôn có 4 thuật toán hiển thị
+        group_rows = 3
+        max_algorithms = 4
 
         start_y = (
             MAZE_OFFSET_Y
             + group_rows * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING)
-            + 40  # khoảng cách giữa nhóm thuật toán và phần thuật toán con
+            + 40
             + max_algorithms * (self.ALG_BUTTON_HEIGHT + self.BUTTON_SPACING)
-            + 20  # khoảng cách thêm trước control
+            + 20
         )
 
+        # Nếu là nút Quit (index 9)
+        if i == 9:
+            quit_width = 3 * button_width + 2 * spacing_x
+            quit_x = start_x
+            quit_y = start_y + 3 * (button_height + spacing_y)
+            return pygame.Rect(quit_x, quit_y, quit_width, button_height)
+        
+        # Các nút khác
         row = i // cols
         col = i % cols
         x = start_x + col * (button_width + spacing_x)
