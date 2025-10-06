@@ -1,5 +1,5 @@
 import heapq
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 from .cost import DEFAULT_COST
 
 def run_ucs(game, cost_func=DEFAULT_COST):
@@ -7,7 +7,7 @@ def run_ucs(game, cost_func=DEFAULT_COST):
     Uniform Cost Search (UCS)
     """
 
-    game.alg_name = "UCS"
+    game.alg_name = "Uniform Cost Search"
 
     # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
     start_pos = getattr(game, 'custom_start', (0, 0))
@@ -55,3 +55,6 @@ def run_ucs(game, cost_func=DEFAULT_COST):
 
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)

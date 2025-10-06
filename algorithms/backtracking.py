@@ -1,4 +1,4 @@
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 import pygame
 import time
 
@@ -125,6 +125,13 @@ def run_backtracking(game):
                 break
         
         step_count += 1
+    
+    # Kết thúc thuật toán
+    game.is_running = False
+    game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
 
 def is_valid_move_temp(game, x, y, temp_visited):
     """Kiểm tra move hợp lệ với visited tạm thời"""

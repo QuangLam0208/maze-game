@@ -1,10 +1,10 @@
 from collections import deque
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 def run_bfs(game):
     """Chạy BFS, cập nhật trạng thái của MazeGame"""
 
-    game.alg_name = "BFS"
+    game.alg_name = "Breadth-First Search"
 
     # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
     start_pos = getattr(game, 'custom_start', (0, 0))
@@ -50,3 +50,6 @@ def run_bfs(game):
 
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)

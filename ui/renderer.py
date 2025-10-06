@@ -87,7 +87,7 @@ class Renderer:
                 "gradient": "pink_orange",
                 "text_color": WHITE,
                 "algorithms": [
-                    {"name": "Nondeterministic", "desc": "Tìm kiếm với cấu trúc AND-OR"},
+                    {"name": "AND-OR Search", "desc": "Tìm kiếm với cấu trúc AND-OR"},
                     {"name": "Unobservable Search", "desc": "Không quan sát"},
                     {"name": "Partial Observable", "desc": "Nhìn thấy một phần"}
                 ]
@@ -97,9 +97,10 @@ class Renderer:
                 "gradient": "teal_lime",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "Backtracking", "desc": "Thử và sai, quay lui khi vi phạm"},
-                    {"name": "Forward Checking", "desc": "Cắt tỉa miền giá trị sau mỗi gán"},
-                    {"name": "Arc Consistency Algorithm 3", "desc": "Thuật toán duy trì tính nhất quán"}
+                    {"name": "Backtracking", "desc": "Quay lui tìm kiếm"},
+                    {"name": "Genetic Algorithm", "desc": "Tiến hóa tự nhiên"},
+                    {"name": "Ant Colony Optimization", "desc": "Hành vi kiến"},
+                    {"name": "Particle Swarm Optimization", "desc": "Đàn chim"}
                 ]
             },
             {
@@ -107,9 +108,9 @@ class Renderer:
                 "gradient": "red_yellow",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "", "desc": ""},
-                    {"name": "", "desc": ""},
-                    {"name": "", "desc": ""}
+                    {"name": "Q-Learning", "desc": "Học tăng cường"},
+                    {"name": "Neural Network Path", "desc": "Mạng neural"},
+                    {"name": "Random Forest Path", "desc": "Ensemble learning"}
                 ]
             }
         ]
@@ -291,24 +292,35 @@ class Renderer:
         info_y = MAZE_OFFSET_Y - 45
         
         current_group = self.algorithm_groups[self.game.selected_group]
-        current_alg = current_group["algorithms"][self.game.selected_algorithm]
-
+        
         # Lấy gradient màu của group
         gradient_key = current_group.get("gradient", "purple_blue")
         colors = GRADIENTS[gradient_key]
         main_color = (147, 51, 234)
 
-        info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
+        if self.game.selected_algorithm == -1:
+            # Chưa chọn thuật toán con
+            if self.game.group_results:
+                info_text = f"Nhóm: {current_group['name']} - Đã chạy tất cả thuật toán (Nhấn thuật toán con để xem kết quả)"
+            else:
+                info_text = f"Nhóm: {current_group['name']} - Nhấn Run để chạy tất cả thuật toán"
+        else:
+            # Đã chọn thuật toán con
+            current_alg = current_group["algorithms"][self.game.selected_algorithm]
+            if self.game.selected_result_algorithm:
+                info_text = f"Đang hiển thị: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
+            else:
+                info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
         text = self.font.render(info_text, True, main_color)
         self.screen.blit(text, (info_x, info_y))
 
     def draw_controls(self):
         """Vẽ các nút điều khiển"""
-        button_width = 85  # Giảm chiều rộng để vừa 6 buttons
+        button_width = 75  # Giảm chiều rộng để vừa 8 buttons
         button_height = 35
         start_x = 20
         start_y = 720
-        spacing = 7  # Giảm spacing để vừa 6 buttons
+        spacing = 5  # Giảm spacing để vừa 8 buttons
         
         buttons = [{"text": "Bắt đầu", "color": GREEN, "action": "start"},
                     {"text": "Dừng", "color": RED, "action": "stop"},
@@ -317,8 +329,7 @@ class Renderer:
                     {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
                     {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
                     {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
-                    {"text": "Wall Node", "color": ORANGE, "action": "set_wall"},
-                    {"text": "Thống kê", "color": CYAN, "action": "statistics"}]
+                    {"text": "Xóa LS", "color": (200, 100, 50), "action": "clear_history"}]
         
         for i, button in enumerate(buttons):
             x = start_x + i * (button_width + spacing)
@@ -331,23 +342,18 @@ class Renderer:
                 color = button["color"]
             
             pygame.draw.rect(self.screen, color, button_rect, border_radius=self.BUTTON_RADIUS)
-            border_width = 1
-            # Đánh dấu nút đang active
-            if (button["action"] == "set_nodes" and self.game.node_placement_mode in ("start", "end")) or \
-               (button["action"] == "set_wall" and self.game.node_placement_mode == "wall"):
-                border_width = 3
-            pygame.draw.rect(self.screen, BLACK, button_rect, border_width, border_radius=self.BUTTON_RADIUS)
+            pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=self.BUTTON_RADIUS)
             
             text = self.small_font.render(button["text"], True, WHITE)
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
     
     def get_control_button_rect(self, i):
-        button_width = 80
+        button_width = 75  # Match the width in draw_controls
         button_height = 35
         start_x = 20
         start_y = 720
-        spacing = 10
+        spacing = 5  # Match the spacing in draw_controls
 
         x = start_x + i * (button_width + spacing)
         return pygame.Rect(x, start_y, button_width, button_height)
@@ -397,8 +403,9 @@ class Renderer:
                     # Màu xen kẽ
                     color = BLACK if i % 2 == 0 else DARK_GRAY
                     
-                    # Tên thuật toán
-                    name_text = self.small_font.render(f"#{i+1}. {entry['name']}", True, color)
+                    # Tên thuật toán với status
+                    status_text = entry.get('status', 'unknown')
+                    name_text = self.small_font.render(f"#{i+1}. {entry['name']} ({status_text})", True, color)
                     self.screen.blit(name_text, (stats_x + 10, stats_y + offset_y))
                     
                     # Thông tin chi tiết
@@ -475,9 +482,9 @@ class Renderer:
                     color = RED
                 elif self.game.current_node and self.game.current_node == (i, j):  # Current node
                     color = PINK
-                elif (i, j) in self.game.path:  # Path
+                elif (i, j) in self.game.path:  # Path (màu vàng - nhánh đang chạy)
                     color = YELLOW
-                elif (i, j) in self.game.visited:  # Visited
+                elif (i, j) in self.game.visited:  # Visited (màu xanh nhạt)
                     color = LIGHT_BLUE
                 else:  # Empty
                     color = WHITE
@@ -485,6 +492,19 @@ class Renderer:
                 pygame.draw.rect(self.screen, color, rect)
                 if color != BLACK:  # Don't draw border on walls
                     pygame.draw.rect(self.screen, DARK_GRAY, rect, 1)
+
+        # Highlight path của thuật toán được chọn nếu có
+        if (hasattr(self.game, 'selected_result_algorithm') and 
+            self.game.selected_result_algorithm and 
+            self.game.selected_result_algorithm in self.game.group_results):
+            
+            result_path = self.game.group_results[self.game.selected_result_algorithm]['path']
+            for i, j in result_path:
+                x = MAZE_OFFSET_X + j * self.game.CELL_SIZE
+                y = MAZE_OFFSET_Y + i * self.game.CELL_SIZE
+                rect = pygame.Rect(x, y, self.game.CELL_SIZE, self.game.CELL_SIZE)
+                # Vẽ viền dày màu đỏ để highlight
+                pygame.draw.rect(self.screen, RED, rect, 3)
 
         # Highlight tầm nhìn nếu có
         if hasattr(self.game, "visible_cells"):

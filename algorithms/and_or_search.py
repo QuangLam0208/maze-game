@@ -1,7 +1,7 @@
 from collections import deque
 import time
 import pygame
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 class AndOrNode:
     """Node trong AND-OR Search Tree"""
@@ -76,6 +76,13 @@ def run_and_or_search(game):
         
         # Cập nhật trạng thái solved cho node
         update_solved_status(current_node)
+    
+    # Kết thúc thuật toán
+    game.is_running = False
+    game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
 
 def expand_node(game, node, directions, queue):
     """Mở rộng một node trong AND-OR tree"""

@@ -1,5 +1,5 @@
 from collections import deque
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 import pygame
 import time
 
@@ -51,5 +51,9 @@ def run_unobservable_dfs(game):
     # Nếu stack rỗng mà chưa tới goal
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
+    
     game.draw_frame()
     pygame.time.wait(50)

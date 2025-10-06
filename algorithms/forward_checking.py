@@ -43,10 +43,16 @@ def run_forward_checking(game):
         if not ok:
             return False
 
+        # Cập nhật current_node để hiển thị màu vàng
+        game.current_node = (x, y)
+        
         # Gán giá trị cho biến (visit node)
         update_game_state(game, x, y, visited)
+        
+        # Đảm bảo current_node vẫn hiển thị
+        game.current_node = (x, y)
         game.draw_frame()
-        pygame.time.wait(80)
+        pygame.time.wait(100)
 
         # Nếu tới goal thì kết thúc
         if check_goal(game, x, y, path):
@@ -82,15 +88,28 @@ def run_forward_checking(game):
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
             if (nx, ny) in domains and (nx, ny) not in visited:
+                # Hiển thị node đang khám phá (màu vàng)
+                game.current_node = (nx, ny)
+                game.draw_frame()
+                pygame.time.wait(50)
+                
                 if forward_check(nx, ny, path + [(x, y)]):
                     return True
+                
+                # Reset current_node về vị trí hiện tại
+                game.current_node = (x, y)
+                game.draw_frame()
+                pygame.time.wait(30)
 
         # --- Backtrack ---
         visited.remove((x, y))
         if (x, y) in game.visited:
             game.visited.remove((x, y))
-            game.draw_frame()
-            pygame.time.wait(50)
+            
+        # Hiển thị backtrack bằng cách clear current_node
+        game.current_node = None
+        game.draw_frame()
+        pygame.time.wait(50)
 
         # Restore domain khi backtrack
         for (var, val) in pruned:
@@ -99,6 +118,7 @@ def run_forward_checking(game):
         return False
 
     forward_check(start_x, start_y, [])
-
-    game.is_running = False
+    
+    # Kết thúc thuật toán - clear current_node
     game.current_node = None
+    game.is_running = False

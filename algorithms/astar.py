@@ -2,7 +2,8 @@ import heapq
 import time
 import pygame
 from .heuristic import manhattan_heuristic
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+import heapq
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 
 
@@ -69,3 +70,6 @@ def run_astar(game):
     
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)

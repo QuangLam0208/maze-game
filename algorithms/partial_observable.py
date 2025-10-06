@@ -1,7 +1,7 @@
 from collections import deque
 import pygame
 import time
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 def run_partial_observable_dfs(game, vision_range=1):
     """
@@ -72,6 +72,10 @@ def run_partial_observable_dfs(game, vision_range=1):
 
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
+    
     if hasattr(game, "visible_cells"):
         delattr(game, "visible_cells")
 
@@ -143,5 +147,9 @@ def run_partial_observable_bfs(game, vision_range=1):
 
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
+    
     if hasattr(game, "visible_cells"):
         delattr(game, "visible_cells")
