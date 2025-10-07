@@ -1,9 +1,12 @@
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 from .heuristic import DEFAULT_HEURISTIC
 
 
 def run_hill_climbing(game, heuristic=DEFAULT_HEURISTIC):
     """Chạy Hill Climbing"""
+
+    game.alg_name = "HillClimbing"
+
     # Sử dụng custom start và end nếu có
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
@@ -23,14 +26,20 @@ def run_hill_climbing(game, heuristic=DEFAULT_HEURISTIC):
 
     while game.is_running:
         # animation & sự kiện
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
         (x, y), path, cost = current
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = path
+        
         step_count += 1
-
 
         # Nếu tới Goal
         if check_goal(game, x, y, path):
@@ -62,3 +71,6 @@ def run_hill_climbing(game, heuristic=DEFAULT_HEURISTIC):
     # kết thúc
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)

@@ -11,22 +11,22 @@ from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
-
-
+from algorithms.Unobservable import run_unobservable_dfs
+from algorithms.and_or_search import run_and_or_search
+from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
+from algorithms.backtracking import run_backtracking
 
 from core.maze_generator import generate_maze, generate_beautiful_maze
-
-
 
 # Constants
 WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 800
-MAZE_SIZE = 25
-CELL_SIZE = 20
+MAZE_SIZE = 23
+CELL_SIZE = 23
 MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
 MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
 MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 100
+MAZE_OFFSET_Y = 60
 
 # Colors
 WHITE = (255, 255, 255)
@@ -41,6 +41,9 @@ class MazeGame:
         self.title_font = pygame.font.SysFont('arial', 28)
         self.small_font = pygame.font.SysFont('arial', 16)
         
+        self.history = [] #lưu lại các lần chạy
+        self.alg_name = "" 
+        
         # Add maze dimensions as instance attributes
         self.MAZE_SIZE = MAZE_SIZE
         self.MAZE_WIDTH = MAZE_WIDTH
@@ -53,7 +56,7 @@ class MazeGame:
         
         # Game state
         self.selected_group = 0
-        self.selected_algorithm = 0
+        self.selected_algorithm = -1  # Không chọn thuật toán nào ban đầu
         self.maze = []
         self.visited = set()
         self.path = []
@@ -61,10 +64,15 @@ class MazeGame:
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
         self.start_time = 0
+        self.backtracked_nodes = set()  # Lưu các node đã backtrack
+        
+        # Lưu kết quả chạy tất cả thuật toán trong nhóm
+        self.group_results = {}  # {algorithm_name: {path: [...], stats: {...}}}
+        self.selected_result_algorithm = None  # Thuật toán được chọn để highlight
         
         # Custom Start/End nodes
-        self.custom_start = (1, 1)  # Default start position  
-        self.custom_end = (MAZE_SIZE-2, MAZE_SIZE-2)  # Default end position
+        self.custom_start = (0, 0)  # Default start position
+        self.custom_end = (MAZE_SIZE-1, MAZE_SIZE-1)  # Default end position
         self.node_placement_mode = None  # None, "start", "end"
 
         self.maze, state = generate_maze(MAZE_SIZE)
@@ -80,11 +88,22 @@ class MazeGame:
             "A* Search": run_astar,
             "Hill Climbing": run_hill_climbing,
             "Simulated Annealing": run_simulated_annealing,
-            "Beam Search": run_beam
+            "Beam Search": run_beam,
+            "Unobservable Search": run_unobservable_dfs,
+            "AND-OR Search": run_and_or_search,
+            "Partial Observable": run_partial_observable_dfs,
+            "Backtracking": run_backtracking
             # ... thêm các thuật toán khác
         }
 
     # --- Event Handling & Algorithms ---
+    def default_start_end_node(self):
+        """Đặt lại start và end node về vị trí mặc định"""
+        # Xóa nodes hiện tại nếu có
+        self.custom_start = (0, 0)  # Default start position
+        self.custom_end = (MAZE_SIZE-1, MAZE_SIZE-1)  # Default end position
+        self.node_placement_mode = None  # Tắt mode đặt node
+    
     def _apply_state(self, state):
         """Áp dụng trạng thái cho mê cung"""
         self.start = state.get('start', (0, 0))
@@ -94,73 +113,67 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.backtracked_nodes = set()
+
+        # Nếu trước đó đang dùng partial-observable, xóa known_maze / visible_cells
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
 
     def handle_click(self, pos):
         """Xử lý click chuột"""
-        # Check group buttons (2x3 grid)
-        button_width = 120
-        button_height = 50
-        start_x = 20
-        start_y = 20
-        spacing = 10
-        
-        for i in range(6):
-            col = i % 2
-            row = i // 2
-            x = start_x + col * (button_width + spacing)
-            y = start_y + row * (button_height + spacing)
-            button_rect = pygame.Rect(x, y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+        # Check group buttons
+        for i in range(len(self.renderer.algorithm_groups)):
+            if self.renderer.get_group_button_rect(i).collidepoint(pos):
+                # If switching to a different group, reset path and group results
+                if self.selected_group != i:
+                    self.reset_path()  # Reset current path display
+                    self.group_results = {}  # Clear previous group results
+                    self.selected_result_algorithm = None  # Clear result selection
+                
                 self.selected_group = i
-                self.selected_algorithm = 0  # Reset algorithm selection
+                self.selected_algorithm = -1  # Không auto-chọn thuật toán nào
                 return
-        
-        # Check algorithm buttons
-        button_width = 250
-        button_height = 60
-        start_x = 20
-        start_y = 420
-        spacing = 5
-        
-        current_group = self.renderer.algorithm_groups[self.selected_group]
 
+        # Check algorithm buttons
+        current_group = self.renderer.algorithm_groups[self.selected_group]
         for i, alg in enumerate(current_group["algorithms"]):
-            y = start_y + i * (button_height + spacing)
-            button_rect = pygame.Rect(start_x, y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+            if self.renderer.get_algorithm_button_rect(self.selected_group, i).collidepoint(pos):
                 self.selected_algorithm = i
+                # Nếu đã chạy tất cả thuật toán trong nhóm, highlight kết quả thuật toán này
+                if self.group_results:
+                    self.selected_result_algorithm = alg["name"]
+                    self.highlight_algorithm_result(alg["name"])
                 return
-        
+
         # Check control buttons
-        button_width = 85  # Khớp với renderer.py
-        button_height = 35
-        start_x = 20
-        start_y = 720
-        spacing = 7  # Khớp với renderer.py
-        
-        actions = ["start", "stop", "reset", "new_maze", "beautiful_maze", "set_nodes"]
-        
+        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "clear_history"]
+
         for i, action in enumerate(actions):
-            x = start_x + i * (button_width + spacing)
-            button_rect = pygame.Rect(x, start_y, button_width, button_height)
-            
-            if button_rect.collidepoint(pos):
+            if self.renderer.get_control_button_rect(i).collidepoint(pos):
                 if action == "start" and not self.is_running:
                     self.start_algorithm()
                 elif action == "stop":
                     self.is_running = False
                 elif action == "reset":
+                    self.reset()
+                    self.default_start_end_node()  # Đặt lại start/end nodes về default
+                elif action == "reset_path":
+                    self.reset_path()
+                elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
+                    self.clear_history()
                     self._apply_state(state)
-                elif action == "new_maze" and not self.is_running:
-                    self.maze, state = generate_maze(MAZE_SIZE)
-                    self._apply_state(state)
+                    self.default_start_end_node()  # Đặt lại start/end nodes về default
                 elif action == "beautiful_maze" and not self.is_running:
                     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
+                    self.clear_history()
                     self._apply_state(state)
+                    self.default_start_end_node()  # Đặt lại start/end nodes về default
                 elif action == "set_nodes" and not self.is_running:
+                    # Reset path khi bắt đầu đặt nodes
+                    self.reset_path()
                     # Khi click nút, xóa các nodes hiện tại và bắt đầu đặt lại
                     if self.node_placement_mode is None:
                         # Xóa nodes hiện tại và bắt đầu mode đặt start
@@ -170,6 +183,8 @@ class MazeGame:
                     else:
                         # Nếu đang ở mode đặt node, thoát mode và giữ nodes đã đặt
                         self.node_placement_mode = None
+                elif action == "clear_history":
+                    self.clear_history()
                 return
         
         # Check if clicking in maze area for node placement
@@ -195,13 +210,25 @@ class MazeGame:
 
     def get_current_algorithm_name(self):
         """Lấy tên thuật toán đang chọn"""
+        if self.selected_algorithm == -1:
+            return None
         group = self.renderer.algorithm_groups[self.selected_group]
         alg = group["algorithms"][self.selected_algorithm]
         return alg["name"]
 
     def start_algorithm(self):
-        """Bắt đầu chạy thuật toán"""
         if self.is_running:
+            return
+
+        # Kiểm tra xem cả start và end nodes đã được đặt chưa
+        if not hasattr(self, 'custom_start') or not hasattr(self, 'custom_end') or \
+           self.custom_start is None or self.custom_end is None:
+            print("⚠ Cần đặt đủ cả Start và End nodes trước khi chạy thuật toán!")
+            return
+
+        # Nếu chưa chọn thuật toán con, chạy tất cả thuật toán trong nhóm
+        if self.selected_algorithm == -1:
+            self.run_all_algorithms_in_group()
             return
 
         self.is_running = True
@@ -212,11 +239,118 @@ class MazeGame:
         self.stats["nodes_visited"] = 0
 
         alg_name = self.get_current_algorithm_name()
+        self.alg_name = alg_name   # nhớ lưu tên thuật toán
         if alg_name in self.algorithms:
             self.algorithms[alg_name](self)
+            # Algorithm completion (success/failure) is now handled by algorithm_runner.py
         else:
             print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
             self.is_running = False
+
+    def run_all_algorithms_in_group(self):
+        """Chạy tất cả thuật toán trong nhóm được chọn"""
+        print("🔄 Đang chạy tất cả thuật toán trong nhóm...")
+        
+        # Reset kết quả cũ
+        self.group_results = {}
+        self.selected_result_algorithm = None
+        
+        # Prepare history for group execution
+        if not hasattr(self, "history"):
+            self.history = []
+        
+        current_group = self.renderer.algorithm_groups[self.selected_group]
+        total_algorithms = len(current_group["algorithms"])
+        completed = 0
+        
+        for i, alg_info in enumerate(current_group["algorithms"]):
+            alg_name = alg_info["name"]
+            print(f"📊 Đang chạy: {alg_name}")
+            
+            # Reset trạng thái cho mỗi thuật toán
+            self.visited = set()
+            self.path = []
+            self.current_node = None
+            self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+            self.start_time = time.time()
+            self.alg_name = alg_name
+            
+            # Chạy thuật toán nếu có
+            if alg_name in self.algorithms:
+                # Tạm thời set is_running = True để thuật toán chạy
+                self.is_running = True
+                
+                try:
+                    self.algorithms[alg_name](self)
+                    
+                    # Lưu kết quả
+                    elapsed_time = (time.time() - self.start_time) * 1000
+                    found_goal = len(self.path) > 0
+                    
+                    self.group_results[alg_name] = {
+                        'path': list(self.path),  # Copy path
+                        'visited': set(self.visited),  # Copy visited
+                        'stats': {
+                            'nodes_visited': self.stats["nodes_visited"],
+                            'path_length': len(self.path),
+                            'time': elapsed_time,
+                            'found_goal': found_goal
+                        }
+                    }
+                    
+                    # Note: History is already handled by algorithm_runner.py
+                    
+                except Exception as e:
+                    print(f"❌ Lỗi khi chạy {alg_name}: {e}")
+                    self.group_results[alg_name] = {
+                        'path': [],
+                        'visited': set(),
+                        'stats': {
+                            'nodes_visited': 0,
+                            'path_length': 0,
+                            'time': 0,
+                            'found_goal': False
+                        }
+                    }
+                    
+                    # Add to history only for errors not caught by algorithm_runner
+                    if not hasattr(self, "history"):
+                        self.history = []
+                    
+                    self.history.insert(0, {
+                        "name": alg_name,
+                        "nodes": 0,
+                        "length": 0,
+                        "time": "0ms",
+                        "status": "fail"
+                    })
+            else:
+                print(f"⚠ Thuật toán {alg_name} chưa được implement")
+                
+            completed += 1
+            print(f"✅ Hoàn thành {completed}/{total_algorithms}")
+        
+        # Kết thúc
+        self.is_running = False
+        self.current_node = None
+        self.visited = set()
+        self.path = []
+        
+        # Trim history to keep only last 10 entries
+        if hasattr(self, "history") and len(self.history) > 10:
+            self.history = self.history[:10]
+        
+        print("🎉 Đã chạy xong tất cả thuật toán trong nhóm!")
+        print("💡 Nhấn vào thuật toán con để xem kết quả của nó")
+
+    def highlight_algorithm_result(self, algorithm_name):
+        """Highlight kết quả của một thuật toán cụ thể"""
+        if algorithm_name in self.group_results:
+            result = self.group_results[algorithm_name]
+            self.path = result['path']
+            self.visited = result['visited']
+            self.stats = result['stats']
+            print(f"🔍 Đang hiển thị kết quả của {algorithm_name}: {len(self.path)} nodes trong path")
 
     def draw_frame(self):
         """Vẽ một frame hoàn chỉnh"""
@@ -243,3 +377,46 @@ class MazeGame:
 
         pygame.quit()
         sys.exit()
+
+    def reset(self):
+        """Reset toàn bộ maze về trắng"""
+        self.maze = [[0 for _ in range(self.MAZE_SIZE)] for _ in range(self.MAZE_SIZE)]
+        self.visited = set()
+        self.path = []
+        self.current_node = None
+        self.is_running = False
+        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.backtracked_nodes = set()
+        
+        # Clear group results
+        self.group_results = {}
+        self.selected_result_algorithm = None
+        
+        self.clear_history()
+
+        # remove partial-observable artifacts so renderer will draw full maze
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
+            
+    def reset_path(self):
+        """Chỉ reset path và visited, giữ nguyên maze"""
+        self.visited = set()
+        self.path = []
+        self.current_node = None
+        self.is_running = False
+        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.backtracked_nodes = set()
+        
+        # Clear group results
+        self.group_results = {}
+        self.selected_result_algorithm = None
+        
+    def clear_history(self):
+        """Xóa toàn bộ dữ liệu đã lưu trong history"""
+        self.history = []
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")

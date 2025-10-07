@@ -23,9 +23,57 @@ def check_goal(game, x, y, path):
         game.stats["path_length"] = len(game.path)
         game.current_node = None
         game.is_running = False
+
+        # Cập nhật thời gian
+        elapsed_time = (time.time() - game.start_time) * 1000
+        game.stats["time"] = elapsed_time
+
+        # Lưu vào history
+        if not hasattr(game, "history"):
+            game.history = []
+
+        game.history.insert(0, {
+            "name": game.alg_name,
+            "nodes": game.stats["nodes_visited"],
+            "length": game.stats["path_length"],
+            "time": f"{elapsed_time:.0f}ms",
+            "status": "done"
+        })
+
+        if len(game.history) > 10:
+            game.history.pop()
+
         return True
-    
     return False
+
+def algorithm_finished(game):
+    '''Handle algorithm completion - add to history if not already added'''
+    # This is called when algorithm finishes without finding path
+    # Only add to history if not already added (to avoid duplicates)
+    if not hasattr(game, "history"):
+        game.history = []
+    
+    # Check if this algorithm was already added to history (success case)
+    already_in_history = any(
+        entry["name"] == game.alg_name 
+        for entry in game.history[:3]  # Check recent entries
+    )
+    
+    if not already_in_history:
+        # Algorithm finished without finding path
+        elapsed_time = (time.time() - game.start_time) * 1000
+        game.stats["time"] = elapsed_time
+        
+        game.history.insert(0, {
+            "name": game.alg_name,
+            "nodes": game.stats["nodes_visited"],
+            "length": 0,
+            "time": f"{elapsed_time:.0f}ms",
+            "status": "fail"
+        })
+
+        if len(game.history) > 10:
+            game.history.pop()
 
 def handle_frame(game, step_count, max_steps_per_frame=3, delay=80):
     if step_count >= max_steps_per_frame:

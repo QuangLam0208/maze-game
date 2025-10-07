@@ -1,7 +1,7 @@
 import heapq
 import pygame
 import time
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 def manhattan_distance(pos1, pos2):
     """Tính khoảng cách Manhattan giữa hai điểm"""
@@ -9,6 +9,9 @@ def manhattan_distance(pos1, pos2):
 
 def run_gbf(game):
     """Chạy Greedy Best-First Search, cập nhật trạng thái của MazeGame"""
+
+    game.alg_name = "GBF"
+
     # Sử dụng custom start và end nếu có
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
@@ -31,7 +34,10 @@ def run_gbf(game):
     step_count = 0
 
     while priority_queue and game.is_running:
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
@@ -43,6 +49,10 @@ def run_gbf(game):
 
         # Cập nhật trạng thái game
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = current_path + [(x, y)]
+        
         step_count += 1
 
         # Kiểm tra đích
@@ -63,5 +73,9 @@ def run_gbf(game):
     
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
+    
     game.draw_frame()
     pygame.time.wait(50)

@@ -1,11 +1,14 @@
 import heapq
 import pygame
 import time
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 from algorithms.heuristic import h_manhattan_cost
 
 def run_beam(game, beam_width=3):
     """Chạy Beam Search, cập nhật trạng thái của MazeGame"""
+
+    game.alg_name = "Beam"
+
     # Sử dụng custom start và end nếu có
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
@@ -16,7 +19,7 @@ def run_beam(game, beam_width=3):
         goal = (len(game.maze) - 1, len(game.maze[0]) - 1)
     else:
         goal = goal_pos
-    
+
     # Beam search duy trì một tập hợp các trạng thái tốt nhất (beam)
     
     # Khởi tạo beam với trạng thái ban đầu
@@ -29,7 +32,10 @@ def run_beam(game, beam_width=3):
     step_count = 0
 
     while current_beam and game.is_running:
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
@@ -43,6 +49,10 @@ def run_beam(game, beam_width=3):
                 
             # Cập nhật trạng thái game cho node hiện tại
             update_game_state(game, x, y, visited_set)
+            
+            # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+            game.path = current_path + [(x, y)]
+            
             step_count += 1
 
             # Kiểm tra đích
@@ -85,5 +95,9 @@ def run_beam(game, beam_width=3):
 
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
+    
     game.draw_frame()
     pygame.time.wait(50)
