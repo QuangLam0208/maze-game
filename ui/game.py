@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from ui.renderer import Renderer
+from ui.renderer import MAZE_SIZE, CELL_SIZE, MAZE_OFFSET_X, MAZE_OFFSET_Y, MAZE_HEIGHT, MAZE_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
 from algorithms.gbf import run_gbf
@@ -17,25 +18,13 @@ from algorithms.sa import run_simulated_annealing
 from algorithms.astar import run_astar
 from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
-from algorithms.Unobservable import run_unobservable_dfs
+from algorithms.unobservable import run_unobservable_dfs
 from algorithms.and_or_search import run_and_or_search
-from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
+from algorithms.partial_observable import run_partial_observable_dfs
 from algorithms.forward_checking import run_forward_checking
 from algorithms.AC3 import run_ac3_csp
 
-from PIL import Image, ImageDraw, ImageFont
-
 from core.maze_generator import generate_maze, generate_beautiful_maze
-
-# Constants
-WINDOW_WIDTH = 1400
-WINDOW_HEIGHT = 800
-MAZE_SIZE = 25
-CELL_SIZE = 25
-MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
-MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
-MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 60
 
 # Colors
 WHITE = (255, 255, 255)
@@ -44,19 +33,14 @@ class MazeGame:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-        pygame.display.set_caption("Maze Pathfinding - 6 Groups Algorithm Selection")
+        pygame.display.set_caption("Maze Pathfinding")
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont('arial', 20)
-        self.title_font = pygame.font.SysFont('arial', 28)
-        self.small_font = pygame.font.SysFont('arial', 16)
         
         self.history = [] #lưu lại các lần chạy
         self.alg_name = "" 
         
         # Add maze dimensions as instance attributes
         self.MAZE_SIZE = MAZE_SIZE
-        self.MAZE_WIDTH = MAZE_WIDTH
-        self.MAZE_HEIGHT = MAZE_HEIGHT
         self.CELL_SIZE = CELL_SIZE
         self.MAZE_OFFSET_X = MAZE_OFFSET_X
         self.MAZE_OFFSET_Y = MAZE_OFFSET_Y

@@ -1,6 +1,6 @@
 import pygame
 
-# Colors (cần giữ đồng bộ với game)
+# Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (128, 128, 128)
@@ -16,13 +16,45 @@ CYAN = (0, 200, 200)
 PINK = (255, 192, 203)
 LIGHT_BLUE = (173, 216, 230)
 
-# Maze constants để hiển thị info
-MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 60
+# --- WINDOW ---
+WINDOW_WIDTH = 1400
+WINDOW_HEIGHT = 800
 
-RIGHT_SIDE_PANEL_WIDTH = 180
-LEGEND_HEIGHT = 210
+BUTTON_SPACING = 10  # khoảng cách giữa các nút thuật toán
+BUTTON_RADIUS = 8          # độ bo góc 
+
+# --- NHÓM NÚT THUẬT TOÁN ---
+ALG_LEFT = 90   # khoảng cách trái của nhóm thuật toán với màn hình
+# NHÓM CHA
+GROUP_BUTTON_WIDTH = 220 # độ rộng nút
+GROUP_BUTTON_HEIGHT = 40   # độ cao nút cha
+TOTAL_GROUP_HEIGHT = 6*GROUP_BUTTON_HEIGHT + 5*BUTTON_SPACING # tổng độ cao nhóm cha
+# NHÓM CON
+ALG_BUTTON_WIDTH = GROUP_BUTTON_WIDTH
+ALG_BUTTON_HEIGHT = 60     # độ cao nút con
+TOTAL_4ALG_HEIGHT = 4*ALG_BUTTON_HEIGHT +  3*BUTTON_SPACING # tổng độ cao nhóm 4 con 
+PARENT_CHILD_SPACING = 30 # khoảng cách giữa nhóm cha và nhóm con
+
+# --- MAZE ---
+MAZE_OFFSET_X = ALG_LEFT + GROUP_BUTTON_WIDTH + 90 
+MAZE_OFFSET_Y = 60
+MAZE_SIZE = 23
+CELL_SIZE = 23
+MAZE_WIDTH = MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
+
+# --- NHÓM NÚT CHỨC NĂNG ---
+BUTTON_WIDTH = 85 
+BUTTON_HEIGHT = 40
+CONTROL_OFFSET_X = ALG_LEFT
+CONTROL_OFFSET_Y = MAZE_OFFSET_Y + TOTAL_GROUP_HEIGHT + PARENT_CHILD_SPACING + TOTAL_4ALG_HEIGHT + 70
+CONTROL_SPACING = 10
+
+# --- NHÓM LEGEND, STATS & HISTORY
+LEGEND_HEIGHT = 220
+LEGEND_STAT_HIS_X = MAZE_OFFSET_X + MAZE_WIDTH + 90
+STAT_HIS_Y = MAZE_OFFSET_Y + LEGEND_HEIGHT + 20
 STATS_HEIGHT = 150
+RIGHT_SIDE_PANEL_WIDTH = 180
 
 GRADIENTS = {
     "purple_blue": ((147, 51, 234), (59, 130, 246)),
@@ -42,14 +74,6 @@ class Renderer:
         self.font = pygame.font.SysFont("segoeui", 20)   
         self.title_font = pygame.font.SysFont("segoeui", 28, bold=True)
         self.small_font = pygame.font.SysFont("segoeui", 16)
-
-        # --- Kích thước nút ---
-        self.GROUP_BUTTON_WIDTH = 170
-        self.GROUP_BUTTON_HEIGHT = 38   # cha nhỏ hơn
-        self.ALG_BUTTON_WIDTH = 250
-        self.ALG_BUTTON_HEIGHT = 60     # con to hơn
-        self.BUTTON_SPACING = 5
-        self.BUTTON_RADIUS = 8          # độ bo góc 
 
         self.algorithm_groups = [
             {
@@ -87,19 +111,19 @@ class Renderer:
                 "gradient": "pink_orange",
                 "text_color": WHITE,
                 "algorithms": [
-                    {"name": "Nondeterministic", "desc": "Tìm kiếm với cấu trúc AND-OR"},
+                    {"name": "Nondeterministic", "desc": "Cấu trúc AND-OR"},
                     {"name": "Unobservable Search", "desc": "Không quan sát"},
                     {"name": "Partial Observable", "desc": "Nhìn thấy một phần"}
                 ]
             },
             {
-                "name": "Constraint Satisfied Problem",
+                "name": "Constraint Satisfied",
                 "gradient": "teal_lime",
                 "text_color": BLACK,
                 "algorithms": [
                     {"name": "Backtracking", "desc": "Thử và sai, quay lui khi vi phạm"},
                     {"name": "Forward Checking", "desc": "Cắt tỉa miền giá trị sau mỗi gán"},
-                    {"name": "Arc Consistency Algorithm 3", "desc": "Thuật toán duy trì tính nhất quán"}
+                    {"name": "Arc Consistency Algorithm 3", "desc": "Duy trì tính nhất quán"}
                 ]
             },
             {
@@ -164,40 +188,39 @@ class Renderer:
 
     # --- Nhóm thuật toán ---
     def draw_group_buttons(self):
-        """Vẽ 6 nhóm thuật toán chia thành 3 hàng 2 cột, thu nhỏ gọn"""
-        cols = 2
-        spacing_x = 12   # khoảng cách giữa 2 cột
-        spacing_y = 8    # khoảng cách giữa 2 hàng
-        start_x = 30     # dịch trái (cách mép trái màn hình)
-        start_y = MAZE_OFFSET_Y   # cách trên 1 chút
-
-        # Thu nhỏ group button
-        self.GROUP_BUTTON_WIDTH = 170
-        self.GROUP_BUTTON_HEIGHT = 38
-
+        """Vẽ nhóm thuật toán thành 1 cột dọc (nút cha nhỏ hơn)"""
+        start_x = ALG_LEFT
+        start_y = MAZE_OFFSET_Y
+        
         for i, group in enumerate(self.algorithm_groups):
-            row = i // cols
-            col = i % cols
-            x = start_x + col * (self.GROUP_BUTTON_WIDTH + spacing_x)
-            y = start_y + row * (self.GROUP_BUTTON_HEIGHT + spacing_y)
-            button_rect = pygame.Rect(x, y, self.GROUP_BUTTON_WIDTH, self.GROUP_BUTTON_HEIGHT)
-
+            x = start_x
+            y = start_y + i * (GROUP_BUTTON_HEIGHT + BUTTON_SPACING)
+            button_rect = pygame.Rect(x, y, GROUP_BUTTON_WIDTH, GROUP_BUTTON_HEIGHT)
+            
+            # Lấy màu gradient của group
             gradient_key = group.get("gradient", "purple_blue")
             colors = GRADIENTS[gradient_key]
 
             if self.game.selected_group == i:
                 if len(colors) == 2:
-                    Renderer.draw_gradient_rect(self.screen, button_rect, colors[0], colors[1],
-                                                vertical=False, border_radius=self.BUTTON_RADIUS)
-                else:
-                    Renderer.draw_gradient_rect(self.screen, button_rect, colors[0], colors[1], colors[2],
-                                                vertical=False, border_radius=self.BUTTON_RADIUS)
-                pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=self.BUTTON_RADIUS)
-                text_color = group.get("text_color", WHITE)
+                    Renderer.draw_gradient_rect(self.screen, button_rect,
+                                                colors[0], colors[1],
+                                                vertical=False,
+                                                border_radius=BUTTON_RADIUS)
+                else:  # 3 màu
+                    Renderer.draw_gradient_rect(self.screen, button_rect,
+                                                colors[0], colors[1], colors[2],
+                                                vertical=False,
+                                                border_radius=BUTTON_RADIUS)
+                # viền
+                pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=BUTTON_RADIUS)
+                text_color = group.get("text_color", WHITE)  # dùng màu chữ riêng
             else:
                 c1, c2 = GRADIENTS["purple_blue"]
-                Renderer.draw_gradient_rect(self.screen, button_rect, c1, c2,
-                                            vertical=False, border_radius=self.BUTTON_RADIUS)
+                Renderer.draw_gradient_rect(self.screen, button_rect,
+                                            c1, c2,
+                                            vertical=False,
+                                            border_radius=BUTTON_RADIUS)
                 text_color = WHITE
 
             text = self.font.render(group["name"], True, text_color)
@@ -205,32 +228,19 @@ class Renderer:
             self.screen.blit(text, text_rect)
 
     def get_group_button_rect(self, i):
-        """Vị trí đúng của group thứ i (phải khớp với draw_group_buttons)"""
-        cols = 2
-        spacing_x = 12
-        spacing_y = 8
-        start_x = 30
-        start_y = MAZE_OFFSET_Y 
-
-        row = i // cols
-        col = i % cols
-        x = start_x + col * (self.GROUP_BUTTON_WIDTH + spacing_x)
-        y = start_y + row * (self.GROUP_BUTTON_HEIGHT + spacing_y)
-
-        return pygame.Rect(x, y, self.GROUP_BUTTON_WIDTH, self.GROUP_BUTTON_HEIGHT)
+        start_x = ALG_LEFT
+        start_y = MAZE_OFFSET_Y
+        y = start_y + i * (GROUP_BUTTON_HEIGHT + BUTTON_SPACING)
+        return pygame.Rect(start_x, y, GROUP_BUTTON_WIDTH, GROUP_BUTTON_HEIGHT)
 
     # --- Thuật toán con ---
     def draw_algorithm_buttons(self):
         if self.game.selected_group < 0 or self.game.selected_group >= len(self.algorithm_groups):
             return
-        cols = 2
-        rows = (len(self.algorithm_groups) + cols - 1) // cols  # số hàng thực tế
-        start_x = 40
-        start_y = (MAZE_OFFSET_Y 
-                + rows * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING)
-                + 40)  # cách 1 chút dưới nhóm 6 thuật toán
-        spacing = self.BUTTON_SPACING
 
+        start_x = ALG_LEFT
+        start_y = (MAZE_OFFSET_Y + TOTAL_GROUP_HEIGHT + PARENT_CHILD_SPACING)
+        spacing = BUTTON_SPACING
         
         current_group = self.algorithm_groups[self.game.selected_group]
 
@@ -238,17 +248,10 @@ class Renderer:
         gradient_key = current_group.get("gradient", "purple_blue")
         colors = GRADIENTS[gradient_key]
         main_color = colors[0]   # màu text / viền chính
-
-        # Title cho nhóm được chọn
-        title_text = self.font.render(
-            f"Nhóm: {current_group['name']}", 
-            True, (147, 51, 234)
-        )
-        self.screen.blit(title_text, (start_x, start_y - 30))
         
         for i, algorithm in enumerate(current_group["algorithms"]):
-            y = start_y + i * (self.ALG_BUTTON_HEIGHT + spacing)
-            button_rect = pygame.Rect(start_x, y, self.ALG_BUTTON_WIDTH, self.ALG_BUTTON_HEIGHT)
+            y = start_y + i * (ALG_BUTTON_HEIGHT + spacing)
+            button_rect = pygame.Rect(start_x, y, ALG_BUTTON_WIDTH, ALG_BUTTON_HEIGHT)
 
             if self.game.selected_algorithm == i:
                 # --- chọn: vẽ gradient full ---
@@ -256,20 +259,20 @@ class Renderer:
                     Renderer.draw_gradient_rect(self.screen, button_rect,
                                                 colors[0], colors[1],
                                                 vertical=False,
-                                                border_radius=self.BUTTON_RADIUS)
+                                                border_radius=BUTTON_RADIUS)
                 else:
                     Renderer.draw_gradient_rect(self.screen, button_rect,
                                                 colors[0], colors[1], colors[2],
                                                 vertical=False,
-                                                border_radius=self.BUTTON_RADIUS)
+                                                border_radius=BUTTON_RADIUS)
 
-                pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=self.BUTTON_RADIUS)
+                pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=BUTTON_RADIUS)
                 text_color = current_group.get("text_color", WHITE)  # chữ theo group
                 desc_color = current_group.get("text_color", WHITE)
             else:
                 # --- chưa chọn: viền gradient, nền trắng ---
-                pygame.draw.rect(self.screen, WHITE, button_rect, border_radius=self.BUTTON_RADIUS)
-                pygame.draw.rect(self.screen, main_color, button_rect, 1, border_radius=self.BUTTON_RADIUS)
+                pygame.draw.rect(self.screen, WHITE, button_rect, border_radius=BUTTON_RADIUS)
+                pygame.draw.rect(self.screen, main_color, button_rect, 1, border_radius=BUTTON_RADIUS)
 
                 # chữ tím xanh cố định
                 c1, c2 = GRADIENTS["purple_blue"]
@@ -285,123 +288,102 @@ class Renderer:
             self.screen.blit(desc_text, (start_x + 10, y + 30))
 
     def get_algorithm_button_rect(self, group_index, alg_index):
-        """Vị trí chính xác của thuật toán con"""
-        cols = 2
-        rows = (len(self.algorithm_groups) + cols - 1) // cols  # = 3 hàng (vì 6 nhóm)
-        start_x = 40
+        start_x = ALG_LEFT
         start_y = (MAZE_OFFSET_Y 
-                + rows * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING)
-                + 40)  # đồng bộ với draw_algorithm_buttons
-        spacing = self.BUTTON_SPACING
-        y = start_y + alg_index * (self.ALG_BUTTON_HEIGHT + spacing)
-        return pygame.Rect(start_x, y, self.ALG_BUTTON_WIDTH, self.ALG_BUTTON_HEIGHT)
-
-    # --- Info thuật toán hiện tại ---
-    def draw_current_algorithm_info(self):
-        """Hiển thị thông tin thuật toán hiện tại"""
-        info_x = MAZE_OFFSET_X
-        info_y = MAZE_OFFSET_Y - 45
-        
-        current_group = self.algorithm_groups[self.game.selected_group]
-        current_alg = current_group["algorithms"][self.game.selected_algorithm]
-
-        # Lấy gradient màu của group
-        gradient_key = current_group.get("gradient", "purple_blue")
-        colors = GRADIENTS[gradient_key]
-        main_color = (147, 51, 234)
-
-        info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
-        text = self.font.render(info_text, True, main_color)
-        self.screen.blit(text, (info_x, info_y))
+                   + len(self.algorithm_groups) * (GROUP_BUTTON_HEIGHT + BUTTON_SPACING) 
+                   + PARENT_CHILD_SPACING)
+        y = start_y + alg_index * (ALG_BUTTON_HEIGHT + BUTTON_SPACING)
+        return pygame.Rect(start_x, y, ALG_BUTTON_WIDTH, ALG_BUTTON_HEIGHT)
 
     def draw_controls(self):
-        button_width = 100
-        button_height = 40
-        cols = 3
-        spacing_x = 10
-        spacing_y = 10
-
-        start_x = 40
-
-        group_rows = 3
-        max_algorithms = 4
-
-        start_y = (
-            MAZE_OFFSET_Y
-            + group_rows * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING)
-            + 40
-            + max_algorithms * (self.ALG_BUTTON_HEIGHT + self.BUTTON_SPACING)
-            + 20
-        )
-
-        buttons = [
-            {"text": "Bắt đầu", "color": GREEN, "action": "start"},
-            {"text": "Dừng", "color": RED, "action": "stop"},
-            {"text": "Reset Path", "color": GRAY, "action": "reset_path"},
-            {"text": "Reset", "color": DARK_GRAY, "action": "reset"},
-            {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
-            {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
-            {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
-            {"text": "Wall Node", "color": ORANGE, "action": "set_wall"},
-            {"text": "Thống kê", "color": CYAN, "action": "statistics"},
-        ]
-
+        """Vẽ các nút điều khiển"""
+        button_width = BUTTON_WIDTH
+        button_height = BUTTON_HEIGHT
+        start_x = CONTROL_OFFSET_X
+        start_y = CONTROL_OFFSET_Y
+        spacing = CONTROL_SPACING  
+        
+        buttons = [{"text": "Bắt đầu", "color": GREEN, "action": "start"},
+                    {"text": "Dừng", "color": RED, "action": "stop"},
+                    {"text": "Reset Path", "color": GRAY, "action": "reset_path"},
+                    {"text": "Reset", "color": DARK_GRAY, "action": "reset"},
+                    {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
+                    {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
+                    {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
+                    {"text": "Wall Node", "color": ORANGE, "action": "set_wall"},
+                    {"text": "Thống kê", "color": CYAN, "action": "statistics"}]
+        
         for i, button in enumerate(buttons):
-            row = i // cols
-            col = i % cols
-            x = start_x + col * (button_width + spacing_x)
-            y = start_y + row * (button_height + spacing_y)
-            button_rect = pygame.Rect(x, y, button_width, button_height)
-
-            color = GRAY if (button["action"] == "start" and self.game.is_running) else button["color"]
-
-            pygame.draw.rect(self.screen, color, button_rect, border_radius=self.BUTTON_RADIUS)
-
-            border_width = 3 if (
-                (button["action"] == "set_nodes" and self.game.node_placement_mode in ("start", "end"))
-                or (button["action"] == "set_wall" and self.game.node_placement_mode == "wall")
-            ) else 1
-            pygame.draw.rect(self.screen, BLACK, button_rect, border_width, border_radius=self.BUTTON_RADIUS)
-
+            x = start_x + i * (button_width + spacing)
+            button_rect = pygame.Rect(x, start_y, button_width, button_height)
+            
+            # Disable start button when running
+            if button["action"] == "start" and self.game.is_running:
+                color = GRAY
+            else:
+                color = button["color"]
+            
+            pygame.draw.rect(self.screen, color, button_rect, border_radius=BUTTON_RADIUS)
+            border_width = 1
+            # Đánh dấu nút đang active
+            if (button["action"] == "set_nodes" and self.game.node_placement_mode in ("start", "end")) or \
+               (button["action"] == "set_wall" and self.game.node_placement_mode == "wall"):
+                border_width = 3
+            pygame.draw.rect(self.screen, BLACK, button_rect, border_width, border_radius=BUTTON_RADIUS)
+            
             text = self.small_font.render(button["text"], True, WHITE)
             text_rect = text.get_rect(center=button_rect.center)
             self.screen.blit(text, text_rect)
     
     def get_control_button_rect(self, i):
-        """Trả về vị trí (Rect) của nút điều khiển thứ i — cố định dưới vùng 4 hàng thuật toán"""
-        button_width = 100
-        button_height = 40
-        cols = 3
-        spacing_x = 10
-        spacing_y = 10
+        button_width = BUTTON_WIDTH
+        button_height = BUTTON_HEIGHT
+        start_x = CONTROL_OFFSET_X
+        start_y = CONTROL_OFFSET_Y
+        spacing = CONTROL_SPACING  
 
-        start_x = 40
-
-        group_rows = 3          # 6 nhóm (2 cột x 3 hàng)
-        max_algorithms = 4      # giả định luôn có 4 thuật toán hiển thị
-
-        start_y = (
-            MAZE_OFFSET_Y
-            + group_rows * (self.GROUP_BUTTON_HEIGHT + self.BUTTON_SPACING)
-            + 40  # khoảng cách giữa nhóm thuật toán và phần thuật toán con
-            + max_algorithms * (self.ALG_BUTTON_HEIGHT + self.BUTTON_SPACING)
-            + 20  # khoảng cách thêm trước control
-        )
-
-        row = i // cols
-        col = i % cols
-        x = start_x + col * (button_width + spacing_x)
-        y = start_y + row * (button_height + spacing_y)
-
-        return pygame.Rect(x, y, button_width, button_height)
-
-
+        x = start_x + i * (button_width + spacing)
+        return pygame.Rect(x, start_y, button_width, button_height)
+    
+    def draw_legend(self):
+        """Vẽ chú thích"""
+        legend_x = LEGEND_STAT_HIS_X
+        legend_y = MAZE_OFFSET_Y
+        
+        legend_rect = pygame.Rect(legend_x, legend_y, RIGHT_SIDE_PANEL_WIDTH, LEGEND_HEIGHT)
+        pygame.draw.rect(self.screen, WHITE, legend_rect)
+        pygame.draw.rect(self.screen, BLACK, legend_rect, 2)
+        
+        title = self.font.render("LEGEND", True, BLACK)
+        self.screen.blit(title, (legend_x + 10, legend_y + 10))
+        
+        legend_items = [
+            ("Start", GREEN),
+            ("Goal", RED),
+            ("Wall", BLACK),
+            ("Visited", LIGHT_BLUE),
+            ("Path", YELLOW),
+            ("Current", PINK),
+            ("Empty", WHITE)
+        ]
+        
+        for i, (label, color) in enumerate(legend_items):
+            y = legend_y + 40 + i * 23
+            
+            # Color box
+            color_rect = pygame.Rect(legend_x + 15, y + 5, 15, 15)
+            pygame.draw.rect(self.screen, color, color_rect)
+            pygame.draw.rect(self.screen, BLACK, color_rect, 1)
+            
+            # Label
+            label_text = self.small_font.render(label, True, BLACK)
+            self.screen.blit(label_text, (legend_x + 40, y))
 
     def draw_stats_and_history(self):
             """Vẽ bảng thống kê & history kết hợp"""
             # Vị trí bên phải maze
-            stats_x = MAZE_OFFSET_X + self.game.MAZE_WIDTH + 20
-            stats_y = MAZE_OFFSET_Y + 220  # Dưới legend
+            stats_x = LEGEND_STAT_HIS_X
+            stats_y = STAT_HIS_Y
             
             # Background - Tăng chiều cao để chứa cả stats và history
             stats_rect = pygame.Rect(stats_x, stats_y, 300, 380)
@@ -409,15 +391,15 @@ class Renderer:
             pygame.draw.rect(self.screen, BLACK, stats_rect, 2)
             
             # STATS HIỆN TẠI 
-            title = self.font.render("Lần chạy hiện tại", True, BLACK)
+            title = self.font.render("CURRENT RUNNING", True, BLACK)
             self.screen.blit(title, (stats_x + 10, stats_y + 10))
             
             # Current stats
             stats_info = [
-                f"Nodes đã thăm: {self.game.stats['nodes_visited']}",
-                f"Độ dài đường đi: {self.game.stats['path_length']}",
-                f"Thời gian: {self.game.stats['time']:.0f}ms",
-                f"Trạng thái: {'Đang chạy' if self.game.is_running else 'Dừng'}"
+                f"Nodes visited: {self.game.stats['nodes_visited']}",
+                f"Path length: {self.game.stats['path_length']}",
+                f"Time: {self.game.stats['time']:.0f}ms",
+                f"Status: {'Running' if self.game.is_running else 'Stop'}"
             ]
             
             for i, info in enumerate(stats_info):
@@ -430,11 +412,11 @@ class Renderer:
                             (stats_x + 240, stats_y + 130), 2)
             
             #HISTORY
-            history_title = self.font.render("Lịch sử", True, BLACK)
+            history_title = self.font.render("HISTORY", True, BLACK)
             self.screen.blit(history_title, (stats_x + 10, stats_y + 140))
             
             if not self.game.history:
-                no_data = self.small_font.render("Chưa có dữ liệu", True, GRAY)
+                no_data = self.small_font.render("No data", True, GRAY)
                 self.screen.blit(no_data, (stats_x + 10, stats_y + 170))
             else:
                 offset_y = 170
@@ -455,55 +437,21 @@ class Renderer:
                     
                     offset_y += 38
 
-    def draw_legend(self):
-        """Vẽ chú thích"""
-        legend_x = MAZE_OFFSET_X + self.game.MAZE_WIDTH + 20
-        legend_y = MAZE_OFFSET_Y
-        
-        legend_rect = pygame.Rect(legend_x, legend_y, RIGHT_SIDE_PANEL_WIDTH, LEGEND_HEIGHT)
-        pygame.draw.rect(self.screen, WHITE, legend_rect)
-        pygame.draw.rect(self.screen, BLACK, legend_rect, 2)
-        
-        title = self.font.render("Chú thích", True, BLACK)
-        self.screen.blit(title, (legend_x + 10, legend_y + 10))
-        
-        legend_items = [
-            ("Start", GREEN),
-            ("Goal", RED),
-            ("Tường", BLACK),
-            ("Đã thăm", LIGHT_BLUE),
-            ("Đường đi", YELLOW),
-            ("Hiện tại", PINK),
-            ("Trống", WHITE)
-        ]
-        
-        for i, (label, color) in enumerate(legend_items):
-            y = legend_y + 40 + i * 23
-            
-            # Color box
-            color_rect = pygame.Rect(legend_x + 15, y + 5, 15, 15)
-            pygame.draw.rect(self.screen, color, color_rect)
-            pygame.draw.rect(self.screen, BLACK, color_rect, 1)
-            
-            # Label
-            label_text = self.small_font.render(label, True, BLACK)
-            self.screen.blit(label_text, (legend_x + 40, y))
-
     def draw_maze(self):
         """Vẽ maze"""
         # Background maze
         maze_bg = pygame.Rect(MAZE_OFFSET_X - 3, MAZE_OFFSET_Y - 3, 
-                            self.game.MAZE_WIDTH + 6, self.game.MAZE_HEIGHT + 6)
+                            MAZE_WIDTH + 6, MAZE_HEIGHT + 6)
         pygame.draw.rect(self.screen, BLACK, maze_bg)
 
         # Dùng known_maze nếu có, ngược lại dùng maze đầy đủ
         maze = getattr(self.game, "known_maze", self.game.maze)
         
-        for i in range(self.game.MAZE_SIZE):
-            for j in range(self.game.MAZE_SIZE):
-                x = MAZE_OFFSET_X + j * self.game.CELL_SIZE
-                y = MAZE_OFFSET_Y + i * self.game.CELL_SIZE
-                rect = pygame.Rect(x, y, self.game.CELL_SIZE, self.game.CELL_SIZE)
+        for i in range(MAZE_SIZE):
+            for j in range(MAZE_SIZE):
+                x = MAZE_OFFSET_X + j * CELL_SIZE
+                y = MAZE_OFFSET_Y + i * CELL_SIZE
+                rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 
                 cell = maze[i][j]
 
@@ -534,9 +482,9 @@ class Renderer:
         # Highlight tầm nhìn nếu có
         if hasattr(self.game, "visible_cells"):
             for (i, j) in self.game.visible_cells:
-                x = MAZE_OFFSET_X + j * self.game.CELL_SIZE
-                y = MAZE_OFFSET_Y + i * self.game.CELL_SIZE
-                rect = pygame.Rect(x, y, self.game.CELL_SIZE, self.game.CELL_SIZE)
+                x = MAZE_OFFSET_X + j * CELL_SIZE
+                y = MAZE_OFFSET_Y + i * CELL_SIZE
+                rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 pygame.draw.rect(self.screen, (0, 255, 0), rect, 2)  # viền xanh
 
     def draw_all(self):
@@ -545,6 +493,5 @@ class Renderer:
         self.draw_algorithm_buttons()
         self.draw_controls()
         self.draw_stats_and_history()
-        self.draw_current_algorithm_info()
         self.draw_maze()
         self.draw_legend()
