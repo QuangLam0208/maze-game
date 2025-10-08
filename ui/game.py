@@ -1,6 +1,12 @@
 import pygame
 import sys
 import time
+import os
+from datetime import datetime
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 from ui.renderer import Renderer
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
@@ -14,7 +20,10 @@ from algorithms.hillclimbing import run_hill_climbing
 from algorithms.Unobservable import run_unobservable_dfs
 from algorithms.and_or_search import run_and_or_search
 from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
+from algorithms.forward_checking import run_forward_checking
+from algorithms.AC3 import run_ac3_csp
 from algorithms.backtracking import run_backtracking
+
 
 from core.maze_generator import generate_maze, generate_beautiful_maze
 
@@ -90,9 +99,11 @@ class MazeGame:
             "Simulated Annealing": run_simulated_annealing,
             "Beam Search": run_beam,
             "Unobservable Search": run_unobservable_dfs,
-            "AND-OR Search": run_and_or_search,
+            "Nondeterministic": run_and_or_search,
             "Partial Observable": run_partial_observable_dfs,
-            "Backtracking": run_backtracking
+            "Backtracking": run_backtracking,
+            "Forward Checking": run_forward_checking,
+            "Arc Consistency Algorithm 3": run_ac3_csp,
             # ... thêm các thuật toán khác
         }
 
@@ -301,7 +312,7 @@ class MazeGame:
                     # Note: History is already handled by algorithm_runner.py
                     
                 except Exception as e:
-                    print(f"❌ Lỗi khi chạy {alg_name}: {e}")
+                    print(f" Lỗi khi chạy {alg_name}: {e}")
                     self.group_results[alg_name] = {
                         'path': [],
                         'visited': set(),
@@ -328,7 +339,7 @@ class MazeGame:
                 print(f"⚠ Thuật toán {alg_name} chưa được implement")
                 
             completed += 1
-            print(f"✅ Hoàn thành {completed}/{total_algorithms}")
+            print(f" Hoàn thành {completed}/{total_algorithms}")
         
         # Kết thúc
         self.is_running = False

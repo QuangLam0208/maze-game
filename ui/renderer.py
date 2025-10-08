@@ -87,7 +87,7 @@ class Renderer:
                 "gradient": "pink_orange",
                 "text_color": WHITE,
                 "algorithms": [
-                    {"name": "AND-OR Search", "desc": "Tìm kiếm với cấu trúc AND-OR"},
+                    {"name": "Nondeterministic", "desc": "Tìm kiếm với cấu trúc AND-OR"},
                     {"name": "Unobservable Search", "desc": "Không quan sát"},
                     {"name": "Partial Observable", "desc": "Nhìn thấy một phần"}
                 ]
@@ -97,10 +97,9 @@ class Renderer:
                 "gradient": "teal_lime",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "Backtracking", "desc": "Quay lui tìm kiếm"},
-                    {"name": "Genetic Algorithm", "desc": "Tiến hóa tự nhiên"},
-                    {"name": "Ant Colony Optimization", "desc": "Hành vi kiến"},
-                    {"name": "Particle Swarm Optimization", "desc": "Đàn chim"}
+                    {"name": "Backtracking", "desc": "Thử và sai, quay lui khi vi phạm"},
+                    {"name": "Forward Checking", "desc": "Cắt tỉa miền giá trị sau mỗi gán"},
+                    {"name": "Arc Consistency Algorithm 3", "desc": "Thuật toán duy trì tính nhất quán"}
                 ]
             },
             {
@@ -108,9 +107,9 @@ class Renderer:
                 "gradient": "red_yellow",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "Q-Learning", "desc": "Học tăng cường"},
-                    {"name": "Neural Network Path", "desc": "Mạng neural"},
-                    {"name": "Random Forest Path", "desc": "Ensemble learning"}
+                    {"name": "", "desc": ""},
+                    {"name": "", "desc": ""},
+                    {"name": "", "desc": ""}
                 ]
             }
         ]
@@ -328,8 +327,7 @@ class Renderer:
                     {"text": "Reset", "color": DARK_GRAY, "action": "reset"},
                     {"text": "Maze mới", "color": BLUE, "action": "new_maze"},
                     {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
-                    {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
-                    {"text": "Xóa LS", "color": (200, 100, 50), "action": "clear_history"}]
+                    {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"}]
         
         for i, button in enumerate(buttons):
             x = start_x + i * (button_width + spacing)
@@ -484,6 +482,8 @@ class Renderer:
                     color = PINK
                 elif (i, j) in self.game.path:  # Path (màu vàng - nhánh đang chạy)
                     color = YELLOW
+                elif (i, j) in getattr(self.game, 'backtracked_nodes', set()):  # Backtracked nodes (màu xám)
+                    color = GRAY
                 elif (i, j) in self.game.visited:  # Visited (màu xanh nhạt)
                     color = LIGHT_BLUE
                 else:  # Empty
