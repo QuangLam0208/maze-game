@@ -353,8 +353,8 @@ class Renderer:
             else:
                 color = button["color"]
             
-            pygame.draw.rect(self.screen, color, button_rect, border_radius=self.BUTTON_RADIUS)
-            pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=self.BUTTON_RADIUS)
+            pygame.draw.rect(self.screen, color, button_rect, border_radius=BUTTON_RADIUS)
+            pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=BUTTON_RADIUS)
             
             text = self.small_font.render(button["text"], True, WHITE)
             text_rect = text.get_rect(center=button_rect.center)
@@ -516,9 +516,9 @@ class Renderer:
             
             result_path = self.game.group_results[self.game.selected_result_algorithm]['path']
             for i, j in result_path:
-                x = MAZE_OFFSET_X + j * self.game.CELL_SIZE
-                y = MAZE_OFFSET_Y + i * self.game.CELL_SIZE
-                rect = pygame.Rect(x, y, self.game.CELL_SIZE, self.game.CELL_SIZE)
+                x = MAZE_OFFSET_X + j * CELL_SIZE
+                y = MAZE_OFFSET_Y + i * CELL_SIZE
+                rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
                 # Vẽ viền dày màu đỏ để highlight
                 pygame.draw.rect(self.screen, RED, rect, 3)
 
