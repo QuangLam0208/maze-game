@@ -36,6 +36,9 @@ def run_ac3_csp(game):
     domains = {cell: set(all_cells) for cell in all_cells}
 
     visited = set()
+    
+    # Khởi tạo backtracked_nodes để theo dõi các node đã đi qua
+    game.backtracked_nodes = set()
 
     def ac3(domains):
         """
@@ -97,16 +100,15 @@ def run_ac3_csp(game):
         if not ok:
             return False
 
-        # Cập nhật current_node để hiển thị màu vàng
-        game.current_node = (x, y)
-
         # Đánh dấu đang thăm
         update_game_state(game, x, y, visited)
         
-        # Đảm bảo current_node vẫn hiển thị
+        # Cập nhật đường đi hiện tại để hiển thị màu vàng cho node đang xét
+        game.path = path + [(x, y)]
         game.current_node = (x, y)
+        
         game.draw_frame()
-        pygame.time.wait(100)
+        pygame.time.wait(80)
 
         # Kiểm tra goal
         if check_goal(game, x, y, path):
@@ -127,8 +129,19 @@ def run_ac3_csp(game):
             for (var, val) in pruned:
                 domains[var].add(val)
             visited.remove((x, y))
+            
+            # Chuyển node sang backtracked_nodes thay vì xóa khỏi game.visited
             if (x, y) in game.visited:
                 game.visited.remove((x, y))
+                game.backtracked_nodes.add((x, y))
+                
+                # Cập nhật path và current_node khi backtrack
+                game.path = path
+                if path:
+                    game.current_node = path[-1]
+                else:
+                    game.current_node = None
+                    
                 game.draw_frame()
                 pygame.time.wait(50)
             return False
@@ -137,27 +150,24 @@ def run_ac3_csp(game):
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
             if (nx, ny) in domains and (nx, ny) not in visited:
-                # Hiển thị node đang khám phá (màu vàng)
-                game.current_node = (nx, ny)
-                game.draw_frame()
-                pygame.time.wait(50)
-                
                 if backtrack(nx, ny, path + [(x, y)]):
                     return True
-                
-                # Reset current_node về vị trí hiện tại
-                game.current_node = (x, y)
-                game.draw_frame()
-                pygame.time.wait(30)
 
-        # Backtrack - hiển thị quá trình quay lui
-        game.current_node = None  # Xóa current_node khi backtrack
-        game.draw_frame()
-        pygame.time.wait(30)
-        
+        # Backtrack 
         visited.remove((x, y))
+        
+        # Chuyển node sang backtracked_nodes thay vì xóa khỏi game.visited
         if (x, y) in game.visited:
             game.visited.remove((x, y))
+            game.backtracked_nodes.add((x, y))
+            
+            # Cập nhật path và current_node khi backtrack
+            game.path = path
+            if path:
+                game.current_node = path[-1]
+            else:
+                game.current_node = None
+                
             game.draw_frame()
             pygame.time.wait(50)
 
@@ -168,7 +178,5 @@ def run_ac3_csp(game):
 
     # Bắt đầu tìm đường
     backtrack(start_x, start_y, [])
-    
-    # Kết thúc thuật toán
-    game.current_node = None
     game.is_running = False
+    game.current_node = None
