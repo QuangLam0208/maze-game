@@ -77,19 +77,19 @@ def algorithm_finished(game):
 
 def handle_frame(game, step_count, max_steps_per_frame=3, delay=80):
     if step_count >= max_steps_per_frame:
-            # Khi duyệt hết 4 hướng (step 0 -> 3) thì tạm dừng để tạo animation: pygame.time.wait(..) 
-            step_count = 0
-            pygame.time.wait(delay) 
-            # Draw frame of present state (ghi đè lên frame của previous state)
-            game.draw_frame()
+        step_count = 0
+        pygame.time.wait(delay) 
+        game.draw_frame()
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    return
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        stop_rect = pygame.Rect(110, 720, 80, 35)
-                        if stop_rect.collidepoint(event.pos):
-                            game.is_running = False
-                            return step_count, False     
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                game.is_running = False
+                return step_count, False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                # Sử dụng handle_click() để xử lý click đúng cách
+                game.handle_click(event.pos)
+                # Kiểm tra xem game có bị dừng không
+                if not game.is_running:
+                    return step_count, False
         
     return step_count, True
