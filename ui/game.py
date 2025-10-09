@@ -122,8 +122,14 @@ class MazeGame:
         # Check group buttons
         for i in range(len(self.renderer.algorithm_groups)):
             if self.renderer.get_group_button_rect(i).collidepoint(pos):
+                # If switching to a different group, reset path and group results
+                if self.selected_group != i:
+                    self.reset_path()  # Reset current path display
+                    self.group_results = {}  # Clear previous group results
+                    self.selected_result_algorithm = None  # Clear result selection
+                
                 self.selected_group = i
-                self.selected_algorithm = 0
+                self.selected_algorithm = -1  # Không auto-chọn thuật toán nào
                 return
 
         # Check algorithm buttons
@@ -131,6 +137,10 @@ class MazeGame:
         for i, alg in enumerate(current_group["algorithms"]):
             if self.renderer.get_algorithm_button_rect(self.selected_group, i).collidepoint(pos):
                 self.selected_algorithm = i
+                # Nếu đã chạy tất cả thuật toán trong nhóm, highlight kết quả thuật toán này
+                if self.group_results:
+                    self.selected_result_algorithm = alg["name"]
+                    self.highlight_algorithm_result(alg["name"])
                 return
 
         # Check control buttons
