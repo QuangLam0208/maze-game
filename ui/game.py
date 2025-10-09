@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from ui.renderer import Renderer
+from ui.renderer import MAZE_SIZE, CELL_SIZE, MAZE_OFFSET_X, MAZE_OFFSET_Y, MAZE_HEIGHT, MAZE_WIDTH, WINDOW_WIDTH, WINDOW_HEIGHT
 from algorithms.bfs import run_bfs
 from algorithms.dfs import run_dfs
 from algorithms.gbf import run_gbf
@@ -19,23 +20,11 @@ from algorithms.beam import run_beam
 from algorithms.hillclimbing import run_hill_climbing
 from algorithms.unobservable import run_unobservable_dfs
 from algorithms.and_or_search import run_and_or_search
-from algorithms.partial_observable import run_partial_observable_dfs, run_partial_observable_bfs
+from algorithms.partial_observable import run_partial_observable_dfs
 from algorithms.forward_checking import run_forward_checking
 from algorithms.AC3 import run_ac3_csp
 
-from PIL import Image, ImageDraw, ImageFont
-
 from core.maze_generator import generate_maze, generate_beautiful_maze
-
-# Constants
-WINDOW_WIDTH = 1400
-WINDOW_HEIGHT = 800
-MAZE_SIZE = 23
-CELL_SIZE = 23
-MAZE_WIDTH = MAZE_SIZE * CELL_SIZE
-MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
-MAZE_OFFSET_X = 400
-MAZE_OFFSET_Y = 60
 
 # Colors
 WHITE = (255, 255, 255)
@@ -44,19 +33,14 @@ class MazeGame:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-        pygame.display.set_caption("Maze Pathfinding - 6 Groups Algorithm Selection")
+        pygame.display.set_caption("Maze Pathfinding")
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont('arial', 20)
-        self.title_font = pygame.font.SysFont('arial', 28)
-        self.small_font = pygame.font.SysFont('arial', 16)
         
         self.history = [] #lưu lại các lần chạy
         self.alg_name = "" 
         
         # Add maze dimensions as instance attributes
         self.MAZE_SIZE = MAZE_SIZE
-        self.MAZE_WIDTH = MAZE_WIDTH
-        self.MAZE_HEIGHT = MAZE_HEIGHT
         self.CELL_SIZE = CELL_SIZE
         self.MAZE_OFFSET_X = MAZE_OFFSET_X
         self.MAZE_OFFSET_Y = MAZE_OFFSET_Y
@@ -142,11 +126,19 @@ class MazeGame:
                 return
 
         # Check control buttons
-        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall", "statistics"]
+        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall", "statistics", "quit"]
 
         for i, action in enumerate(actions):
             if self.renderer.get_control_button_rect(i).collidepoint(pos):
+                #  Nếu đang chạy, chỉ cho phép nút DỪNG 
+                if self.is_running:
+                    if action == "stop":
+                        self.is_running = False
+                    # Các nút khác bị vô hiệu
+                    return
                 if action == "start" and not self.is_running:
+                    if self.node_placement_mode == "wall":
+                        self.node_placement_mode = None
                     self.start_algorithm()
                 elif action == "stop":
                     self.is_running = False
@@ -181,6 +173,9 @@ class MazeGame:
                         self.node_placement_mode = "wall"
                 elif action == "statistics":
                     self.show_statistics()
+                elif action == "quit":
+                    pygame.quit()
+                    sys.exit()
                 return
         
         # Check if clicking in maze area for node placement
@@ -220,6 +215,12 @@ class MazeGame:
     def start_algorithm(self):
         if self.is_running:
             return
+        
+        # --- Dọn dẹp trạng thái partial observable còn sót ---
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
 
         # Kiểm tra xem cả start và end nodes đã được đặt chưa
         if not hasattr(self, 'custom_start') or not hasattr(self, 'custom_end') or \
@@ -313,6 +314,11 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        # Nếu trước đó đang dùng partial-observable, xóa known_maze / visible_cells
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
         
     def clear_history(self):
         """Xóa toàn bộ dữ liệu đã lưu trong history"""
@@ -332,6 +338,10 @@ class MazeGame:
         for entry in reversed(self.history):
             unique[entry["name"]] = entry
         data = list(unique.values())
+        data = [d for d in data if d.get("length", 0) != 0]
+        if not data:
+            print("Không có thuật toán nào tìm được đích để thống kê!")
+            return
 
         # Sắp xếp theo tên để đồ thị ổn định
         data.sort(key=lambda x: x["name"])
