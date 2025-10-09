@@ -130,7 +130,15 @@ class MazeGame:
 
         for i, action in enumerate(actions):
             if self.renderer.get_control_button_rect(i).collidepoint(pos):
+                #  Nếu đang chạy, chỉ cho phép nút DỪNG 
+                if self.is_running:
+                    if action == "stop":
+                        self.is_running = False
+                    # Các nút khác bị vô hiệu
+                    return
                 if action == "start" and not self.is_running:
+                    if self.node_placement_mode == "wall":
+                        self.node_placement_mode = None
                     self.start_algorithm()
                 elif action == "stop":
                     self.is_running = False
@@ -207,6 +215,12 @@ class MazeGame:
     def start_algorithm(self):
         if self.is_running:
             return
+        
+        # --- Dọn dẹp trạng thái partial observable còn sót ---
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
 
         # Kiểm tra xem cả start và end nodes đã được đặt chưa
         if not hasattr(self, 'custom_start') or not hasattr(self, 'custom_end') or \
@@ -300,6 +314,11 @@ class MazeGame:
         self.current_node = None
         self.is_running = False
         self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        # Nếu trước đó đang dùng partial-observable, xóa known_maze / visible_cells
+        if hasattr(self, "known_maze"):
+            delattr(self, "known_maze")
+        if hasattr(self, "visible_cells"):
+            delattr(self, "visible_cells")
         
     def clear_history(self):
         """Xóa toàn bộ dữ liệu đã lưu trong history"""
