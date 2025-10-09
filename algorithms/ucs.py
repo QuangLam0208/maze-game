@@ -1,5 +1,5 @@
 import heapq
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 from .cost import DEFAULT_COST
 
 def run_ucs(game, cost_func=DEFAULT_COST):
@@ -7,7 +7,7 @@ def run_ucs(game, cost_func=DEFAULT_COST):
     Uniform Cost Search (UCS)
     """
 
-    game.alg_name = "UCS"
+    game.alg_name = "Uniform Cost Search"
 
     # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
     start_pos = getattr(game, 'custom_start', (0, 0))
@@ -23,7 +23,10 @@ def run_ucs(game, cost_func=DEFAULT_COST):
     step_count = 0
 
     while pq and game.is_running:
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
@@ -33,6 +36,10 @@ def run_ucs(game, cost_func=DEFAULT_COST):
             continue
 
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = current_path + [(x, y)]
+        
         step_count += 1
 
         # Check goal
@@ -48,3 +55,6 @@ def run_ucs(game, cost_func=DEFAULT_COST):
 
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)

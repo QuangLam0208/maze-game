@@ -31,6 +31,9 @@ def run_forward_checking(game):
     domains = {cell: set(all_cells) for cell in all_cells}
 
     visited = set()
+    
+    # Khởi tạo backtracked_nodes để theo dõi các node đã đi qua
+    game.backtracked_nodes = set()
 
     def forward_check(x, y, path):
         nonlocal step_count
@@ -45,6 +48,11 @@ def run_forward_checking(game):
 
         # Gán giá trị cho biến (visit node)
         update_game_state(game, x, y, visited)
+        
+        # Cập nhật đường đi hiện tại để hiển thị màu vàng cho node đang xét
+        game.path = path + [(x, y)]
+        game.current_node = (x, y)
+        
         game.draw_frame()
         pygame.time.wait(80)
 
@@ -72,8 +80,19 @@ def run_forward_checking(game):
             for (var, val) in pruned:
                 domains[var].add(val)
             visited.remove((x, y))
+            
+            # Chuyển node sang backtracked_nodes thay vì xóa khỏi game.visited
             if (x, y) in game.visited:
                 game.visited.remove((x, y))
+                game.backtracked_nodes.add((x, y))
+                
+                # Cập nhật path và current_node khi dead-end
+                game.path = path
+                if path:
+                    game.current_node = path[-1]
+                else:
+                    game.current_node = None
+                    
                 game.draw_frame()
                 pygame.time.wait(50)
             return False
@@ -87,8 +106,19 @@ def run_forward_checking(game):
 
         # --- Backtrack ---
         visited.remove((x, y))
+        
+        # Chuyển node sang backtracked_nodes thay vì xóa khỏi game.visited
         if (x, y) in game.visited:
             game.visited.remove((x, y))
+            game.backtracked_nodes.add((x, y))
+            
+            # Cập nhật path và current_node khi backtrack
+            game.path = path
+            if path:
+                game.current_node = path[-1]
+            else:
+                game.current_node = None
+                
             game.draw_frame()
             pygame.time.wait(50)
 

@@ -295,6 +295,35 @@ class Renderer:
         y = start_y + alg_index * (ALG_BUTTON_HEIGHT + BUTTON_SPACING)
         return pygame.Rect(start_x, y, ALG_BUTTON_WIDTH, ALG_BUTTON_HEIGHT)
 
+    # --- Info thuật toán hiện tại ---
+    def draw_current_algorithm_info(self):
+        """Hiển thị thông tin thuật toán hiện tại"""
+        info_x = MAZE_OFFSET_X
+        info_y = MAZE_OFFSET_Y - 45
+        
+        current_group = self.algorithm_groups[self.game.selected_group]
+        
+        # Lấy gradient màu của group
+        gradient_key = current_group.get("gradient", "purple_blue")
+        colors = GRADIENTS[gradient_key]
+        main_color = (147, 51, 234)
+
+        if self.game.selected_algorithm == -1:
+            # Chưa chọn thuật toán con
+            if self.game.group_results:
+                info_text = f"Nhóm: {current_group['name']} - Đã chạy tất cả thuật toán (Nhấn thuật toán con để xem kết quả)"
+            else:
+                info_text = f"Nhóm: {current_group['name']} - Nhấn Run để chạy tất cả thuật toán"
+        else:
+            # Đã chọn thuật toán con
+            current_alg = current_group["algorithms"][self.game.selected_algorithm]
+            if self.game.selected_result_algorithm:
+                info_text = f"Đang hiển thị: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
+            else:
+                info_text = f"Đang sử dụng: {current_alg['name']} ({current_group['name'].replace(chr(10), ' ')})"
+        text = self.font.render(info_text, True, main_color)
+        self.screen.blit(text, (info_x, info_y))        
+
     def draw_controls(self):
         """Vẽ các nút điều khiển"""
         button_width = BUTTON_WIDTH
@@ -324,13 +353,8 @@ class Renderer:
             else:
                 color = button["color"]
             
-            pygame.draw.rect(self.screen, color, button_rect, border_radius=BUTTON_RADIUS)
-            border_width = 1
-            # Đánh dấu nút đang active
-            if (button["action"] == "set_nodes" and self.game.node_placement_mode in ("start", "end")) or \
-               (button["action"] == "set_wall" and self.game.node_placement_mode == "wall"):
-                border_width = 3
-            pygame.draw.rect(self.screen, BLACK, button_rect, border_width, border_radius=BUTTON_RADIUS)
+            pygame.draw.rect(self.screen, color, button_rect, border_radius=self.BUTTON_RADIUS)
+            pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=self.BUTTON_RADIUS)
             
             text = self.small_font.render(button["text"], True, WHITE)
             text_rect = text.get_rect(center=button_rect.center)
@@ -425,9 +449,10 @@ class Renderer:
 
                 for i, entry in enumerate(recent_history):
                     color = BLACK if i % 2 == 0 else DARK_GRAY
-                    name_text = self.small_font.render(
-                        f"{entry['name']}", True, color
-                    )
+                    
+                    # Tên thuật toán với status
+                    status_text = entry.get('status', 'unknown')
+                    name_text = self.small_font.render(f"#{i+1}. {entry['name']} ({status_text})", True, color)
                     self.screen.blit(name_text, (stats_x + 10, stats_y + offset_y))
 
                     # Hiển thị thông tin chi tiết
@@ -471,9 +496,11 @@ class Renderer:
                     color = RED
                 elif self.game.current_node and self.game.current_node == (i, j):  # Current node
                     color = PINK
-                elif (i, j) in self.game.path:  # Path
+                elif (i, j) in self.game.path:  # Path (màu vàng - nhánh đang chạy)
                     color = YELLOW
-                elif (i, j) in self.game.visited:  # Visited
+                elif (i, j) in getattr(self.game, 'backtracked_nodes', set()):  # Backtracked nodes (màu xanh)
+                    color = LIGHT_BLUE
+                elif (i, j) in self.game.visited:  # Visited (màu xanh nhạt)
                     color = LIGHT_BLUE
                 else:  # Empty
                     color = WHITE
@@ -481,6 +508,19 @@ class Renderer:
                 pygame.draw.rect(self.screen, color, rect)
                 if color != BLACK:  # Don't draw border on walls
                     pygame.draw.rect(self.screen, DARK_GRAY, rect, 1)
+
+        # Highlight path của thuật toán được chọn nếu có
+        if (hasattr(self.game, 'selected_result_algorithm') and 
+            self.game.selected_result_algorithm and 
+            self.game.selected_result_algorithm in self.game.group_results):
+            
+            result_path = self.game.group_results[self.game.selected_result_algorithm]['path']
+            for i, j in result_path:
+                x = MAZE_OFFSET_X + j * self.game.CELL_SIZE
+                y = MAZE_OFFSET_Y + i * self.game.CELL_SIZE
+                rect = pygame.Rect(x, y, self.game.CELL_SIZE, self.game.CELL_SIZE)
+                # Vẽ viền dày màu đỏ để highlight
+                pygame.draw.rect(self.screen, RED, rect, 3)
 
         # Highlight tầm nhìn nếu có
         if hasattr(self.game, "visible_cells"):
