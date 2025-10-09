@@ -126,7 +126,7 @@ class MazeGame:
                 return
 
         # Check control buttons
-        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall", "statistics"]
+        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall", "statistics", "quit"]
 
         for i, action in enumerate(actions):
             if self.renderer.get_control_button_rect(i).collidepoint(pos):
@@ -165,6 +165,9 @@ class MazeGame:
                         self.node_placement_mode = "wall"
                 elif action == "statistics":
                     self.show_statistics()
+                elif action == "quit":
+                    pygame.quit()
+                    sys.exit()
                 return
         
         # Check if clicking in maze area for node placement
@@ -316,6 +319,10 @@ class MazeGame:
         for entry in reversed(self.history):
             unique[entry["name"]] = entry
         data = list(unique.values())
+        data = [d for d in data if d.get("length", 0) != 0]
+        if not data:
+            print("Không có thuật toán nào tìm được đích để thống kê!")
+            return
 
         # Sắp xếp theo tên để đồ thị ổn định
         data.sort(key=lambda x: x["name"])

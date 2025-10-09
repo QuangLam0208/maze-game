@@ -20,7 +20,7 @@ LIGHT_BLUE = (173, 216, 230)
 WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 800
 
-BUTTON_SPACING = 10  # khoảng cách giữa các nút thuật toán
+BUTTON_SPACING = 8  # khoảng cách giữa các nút thuật toán
 BUTTON_RADIUS = 8          # độ bo góc 
 
 # --- NHÓM NÚT THUẬT TOÁN ---
@@ -38,14 +38,14 @@ PARENT_CHILD_SPACING = 30 # khoảng cách giữa nhóm cha và nhóm con
 # --- MAZE ---
 MAZE_OFFSET_X = ALG_LEFT + GROUP_BUTTON_WIDTH + 90 
 MAZE_OFFSET_Y = 60
-MAZE_SIZE = 23
-CELL_SIZE = 23
+MAZE_SIZE = 24
+CELL_SIZE = 24
 MAZE_WIDTH = MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
 
 # --- NHÓM NÚT CHỨC NĂNG ---
 BUTTON_WIDTH = 85 
 BUTTON_HEIGHT = 40
-CONTROL_OFFSET_X = ALG_LEFT
+CONTROL_OFFSET_X = ALG_LEFT + 125
 CONTROL_OFFSET_Y = MAZE_OFFSET_Y + TOTAL_GROUP_HEIGHT + PARENT_CHILD_SPACING + TOTAL_4ALG_HEIGHT + 70
 CONTROL_SPACING = 10
 
@@ -311,7 +311,8 @@ class Renderer:
                     {"text": "Maze Đẹp", "color": PURPLE, "action": "beautiful_maze"},
                     {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
                     {"text": "Wall Node", "color": ORANGE, "action": "set_wall"},
-                    {"text": "Thống kê", "color": CYAN, "action": "statistics"}]
+                    {"text": "Thống kê", "color": CYAN, "action": "statistics"},
+                    {"text": "Quit", "color": DARK_GRAY, "action": "quit"}]
         
         for i, button in enumerate(buttons):
             x = start_x + i * (button_width + spacing)
@@ -420,22 +421,24 @@ class Renderer:
                 self.screen.blit(no_data, (stats_x + 10, stats_y + 170))
             else:
                 offset_y = 170
-                for i, entry in enumerate(self.game.history):
-                    # Màu xen kẽ
+                recent_history = self.game.history[:5]
+
+                for i, entry in enumerate(recent_history):
                     color = BLACK if i % 2 == 0 else DARK_GRAY
-                    
-                    # Tên thuật toán
-                    name_text = self.small_font.render(f"#{i+1}. {entry['name']}", True, color)
+                    name_text = self.small_font.render(
+                        f"{entry['name']}", True, color
+                    )
                     self.screen.blit(name_text, (stats_x + 10, stats_y + offset_y))
-                    
-                    # Thông tin chi tiết
+
+                    # Hiển thị thông tin chi tiết
                     info_text = self.small_font.render(
-                        f"Nodes:{entry['nodes']}    Len:{entry['length']}    Time:{entry['time']}", 
+                        f"Nodes:{entry['nodes']}   Len:{entry['length']}   Time:{entry['time']}",
                         True, color
                     )
                     self.screen.blit(info_text, (stats_x + 10, stats_y + offset_y + 16))
-                    
+
                     offset_y += 38
+
 
     def draw_maze(self):
         """Vẽ maze"""
