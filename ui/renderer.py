@@ -354,7 +354,12 @@ class Renderer:
                 color = button["color"]
             
             pygame.draw.rect(self.screen, color, button_rect, border_radius=BUTTON_RADIUS)
-            pygame.draw.rect(self.screen, BLACK, button_rect, 2, border_radius=BUTTON_RADIUS)
+            border_width = 1
+            # Đánh dấu nút đang active
+            if (button["action"] == "set_nodes" and self.game.node_placement_mode in ("start", "end")) or \
+               (button["action"] == "set_wall" and self.game.node_placement_mode == "wall"):
+                border_width = 3
+            pygame.draw.rect(self.screen, BLACK, button_rect, border_width, border_radius=BUTTON_RADIUS)
             
             text = self.small_font.render(button["text"], True, WHITE)
             text_rect = text.get_rect(center=button_rect.center)

@@ -250,7 +250,26 @@ class MazeGame:
         self.alg_name = alg_name   # nhớ lưu tên thuật toán
         if alg_name in self.algorithms:
             self.algorithms[alg_name](self)
-            # Algorithm completion (success/failure) is now handled by algorithm_runner.py
+
+            # ⬇Sau khi thuật toán chạy xong mà không tìm thấy đích
+            if not self.path:  
+                self.is_running = False
+                elapsed_time = (time.time() - self.start_time) * 1000
+                self.stats["time"] = elapsed_time
+
+                if not hasattr(self, "history"):
+                    self.history = []
+
+                self.history.insert(0, {
+                    "name": self.alg_name,
+                    "nodes": self.stats["nodes_visited"],
+                    "length": 0,
+                    "time": f"{elapsed_time:.0f}ms",
+                    "status": "Not Found"
+                })
+
+                if len(self.history) > 5:
+                    self.history.pop()
         else:
             print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
             self.is_running = False
