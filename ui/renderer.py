@@ -482,8 +482,8 @@ class Renderer:
                     color = PINK
                 elif (i, j) in self.game.path:  # Path (màu vàng - nhánh đang chạy)
                     color = YELLOW
-                elif (i, j) in getattr(self.game, 'backtracked_nodes', set()):  # Backtracked nodes (màu xám)
-                    color = GRAY
+                elif (i, j) in getattr(self.game, 'backtracked_nodes', set()):  # Backtracked nodes (màu xanh)
+                    color = LIGHT_BLUE
                 elif (i, j) in self.game.visited:  # Visited (màu xanh nhạt)
                     color = LIGHT_BLUE
                 else:  # Empty
