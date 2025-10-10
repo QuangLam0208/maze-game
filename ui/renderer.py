@@ -341,7 +341,7 @@ class Renderer:
                     {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
                     {"text": "Wall Node", "color": ORANGE, "action": "set_wall"},
                     {"text": "Thống kê", "color": CYAN, "action": "statistics"},
-                    {"text": "Quit", "color": DARK_GRAY, "action": "quit"}]
+                    {"text": "Thống kê nhóm", "color": PURPLE, "action": "group_statistics"}] 
         
         for i, button in enumerate(buttons):
             x = start_x + i * (button_width + spacing)
