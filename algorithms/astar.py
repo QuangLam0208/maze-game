@@ -2,7 +2,8 @@ import heapq
 import time
 import pygame
 from .heuristic import manhattan_heuristic
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+import heapq
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 
 
@@ -34,7 +35,10 @@ def run_astar(game):
     
     while Queue and game.is_running:
         # animation & sự kiện   
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
         
@@ -44,6 +48,10 @@ def run_astar(game):
         
         # cập nhật trạng thái node hiện tại
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = path + [(x, y)]
+        
         step_count += 1
         
         # Nếu tới Goal
@@ -62,3 +70,6 @@ def run_astar(game):
     
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)

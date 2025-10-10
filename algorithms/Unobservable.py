@@ -1,5 +1,5 @@
 from collections import deque
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 import pygame
 import time
 
@@ -33,8 +33,13 @@ def run_unobservable_dfs(game):
         visited_set.add((x, y))
         path = path + [(x, y)]
 
-        # Cập nhật trạng thái game
+        # Cập nhật trạng thái game với hiển thị màu vàng cho node hiện tại
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật đường đi hiện tại và node đang xét để hiển thị màu vàng
+        game.path = path
+        game.current_node = (x, y)
+        
         step_count += 1
 
         # Kiểm tra goal
@@ -53,3 +58,6 @@ def run_unobservable_dfs(game):
     game.current_node = None
     game.draw_frame()
     pygame.time.wait(50)
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
