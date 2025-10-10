@@ -154,6 +154,19 @@ class Renderer:
             }
         ]
 
+        self.button_states = {
+            "start": "normal",
+            "stop": "normal",
+            "reset_path": "normal",
+            "reset": "normal",
+            "new_maze": "normal",
+            "beautiful_maze": "normal",
+            "set_nodes": "normal",
+            "set_wall": "normal",
+            "statistics": "normal",
+            "quit": "active"  # luôn tím-xanh
+        }
+
     def draw_gradient_rect(surface, rect, color1, color2, color3=None, vertical=True, border_radius=0):
         """
         Vẽ gradient (2 hoặc 3 màu) với bo góc.
@@ -335,42 +348,105 @@ class Renderer:
         text = self.big_josef.render(info_text, True, main_color)
         self.screen.blit(text, (info_x, info_y))        
 
+    # def draw_controls(self):
+    #     """Vẽ các nút điều khiển (2 hàng: 6 nút trên, 4 nút dưới — căn giữa theo maze)"""
+    #     buttons = [
+    #         {"text": "Run", "color": GREEN, "action": "start"},
+    #         {"text": "Stop", "color": RED, "action": "stop"},
+    #         {"text": "Reset", "color": GRAY, "action": "reset_path"},
+    #         {"text": "Empty", "color": DARK_GRAY, "action": "reset"},
+    #         {"text": "Graph", "color": BLUE, "action": "new_maze"},
+    #         {"text": "Maze", "color": PURPLE, "action": "beautiful_maze"},
+    #         {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
+    #         {"text": "Wall", "color": ORANGE, "action": "set_wall"},
+    #         {"text": "Statistic", "color": CYAN, "action": "statistics"},
+    #         {"text": "Quit", "color": DARK_GRAY, "action": "quit"}
+    #     ]
+
+    #     # --- Cấu hình layout ---
+    #     first_row_count = 6
+    #     second_row_count = len(buttons) - first_row_count  # = 4
+    #     button_width = BUTTON_WIDTH
+    #     button_height = BUTTON_HEIGHT
+    #     spacing = CONTROL_SPACING
+
+    #     # --- Tính căn giữa theo maze ---
+    #     maze_center_x = MAZE_OFFSET_X + MAZE_WIDTH // 2
+
+    #     # Hàng 1
+    #     total_row1_width = first_row_count * button_width + (first_row_count - 1) * spacing
+    #     start_x_row1 = maze_center_x - total_row1_width // 2
+    #     start_y_row1 = CONTROL_OFFSET_Y
+
+    #     # Hàng 2
+    #     total_row2_width = second_row_count * button_width + (second_row_count - 1) * spacing
+    #     start_x_row2 = maze_center_x - total_row2_width // 2
+    #     start_y_row2 = start_y_row1 + button_height + spacing + 5  # cách hàng 1 một chút
+
+    #     # --- Vẽ từng nút ---
+    #     for i, button in enumerate(buttons):
+    #         if i < first_row_count:
+    #             x = start_x_row1 + i * (button_width + spacing)
+    #             y = start_y_row1
+    #         else:
+    #             j = i - first_row_count
+    #             x = start_x_row2 + j * (button_width + spacing)
+    #             y = start_y_row2
+
+    #         button_rect = pygame.Rect(x, y, button_width, button_height)
+
+    #         # Disable start button when running
+    #         if button["action"] == "start" and self.game.is_running:
+    #             color = GRAY
+    #         else:
+    #             color = button["color"]
+
+    #         pygame.draw.rect(self.screen, color, button_rect, border_radius=BUTTON_RADIUS)
+
+    #         border_width = 1
+    #         # Đánh dấu nút đang active
+    #         if (button["action"] == "set_nodes" and self.game.node_placement_mode in ("start", "end")) or \
+    #         (button["action"] == "set_wall" and self.game.node_placement_mode == "wall"):
+    #             border_width = 3
+    #         pygame.draw.rect(self.screen, BLACK, button_rect, border_width, border_radius=BUTTON_RADIUS)
+
+    #         text = self.small_josef.render(button["text"], True, WHITE)
+    #         text_rect = text.get_rect(center=button_rect.center)
+    #         self.screen.blit(text, text_rect)
+
     def draw_controls(self):
-        """Vẽ các nút điều khiển (2 hàng: 6 nút trên, 4 nút dưới — căn giữa theo maze)"""
+        """Vẽ các nút điều khiển với gradient và hiệu ứng nhấn"""
         buttons = [
-            {"text": "Run", "color": GREEN, "action": "start"},
-            {"text": "Stop", "color": RED, "action": "stop"},
-            {"text": "Reset", "color": GRAY, "action": "reset_path"},
-            {"text": "Empty", "color": DARK_GRAY, "action": "reset"},
-            {"text": "Graph", "color": BLUE, "action": "new_maze"},
-            {"text": "Maze", "color": PURPLE, "action": "beautiful_maze"},
-            {"text": "Start/End", "color": (255, 140, 0), "action": "set_nodes"},
-            {"text": "Wall", "color": ORANGE, "action": "set_wall"},
-            {"text": "Statistic", "color": CYAN, "action": "statistics"},
-            {"text": "Quit", "color": DARK_GRAY, "action": "quit"}
+            {"text": "Run", "action": "start"},
+            {"text": "Stop", "action": "stop"},
+            {"text": "Reset", "action": "reset_path"},
+            {"text": "Empty", "action": "reset"},
+            {"text": "Graph", "action": "new_maze"},
+            {"text": "Maze", "action": "beautiful_maze"},
+            {"text": "Start/End", "action": "set_nodes"},
+            {"text": "Wall", "action": "set_wall"},
+            {"text": "Statistic", "action": "statistics"},
+            {"text": "Quit", "action": "quit"}
         ]
 
         # --- Cấu hình layout ---
         first_row_count = 6
-        second_row_count = len(buttons) - first_row_count  # = 4
-        button_width = BUTTON_WIDTH
-        button_height = BUTTON_HEIGHT
+        button_width, button_height = BUTTON_WIDTH, BUTTON_HEIGHT
         spacing = CONTROL_SPACING
 
-        # --- Tính căn giữa theo maze ---
         maze_center_x = MAZE_OFFSET_X + MAZE_WIDTH // 2
-
-        # Hàng 1
         total_row1_width = first_row_count * button_width + (first_row_count - 1) * spacing
         start_x_row1 = maze_center_x - total_row1_width // 2
         start_y_row1 = CONTROL_OFFSET_Y
 
-        # Hàng 2
-        total_row2_width = second_row_count * button_width + (second_row_count - 1) * spacing
+        total_row2_width = (len(buttons) - first_row_count) * button_width + (len(buttons) - first_row_count - 1) * spacing
         start_x_row2 = maze_center_x - total_row2_width // 2
-        start_y_row2 = start_y_row1 + button_height + spacing + 5  # cách hàng 1 một chút
+        start_y_row2 = start_y_row1 + button_height + spacing + 5
 
-        # --- Vẽ từng nút ---
+        # --- Gradient preset ---
+        red_yellow = GRADIENTS["red_yellow"]
+        purple_blue = GRADIENTS["purple_blue"]
+
         for i, button in enumerate(buttons):
             if i < first_row_count:
                 x = start_x_row1 + i * (button_width + spacing)
@@ -380,25 +456,38 @@ class Renderer:
                 x = start_x_row2 + j * (button_width + spacing)
                 y = start_y_row2
 
-            button_rect = pygame.Rect(x, y, button_width, button_height)
+            rect = pygame.Rect(x, y, button_width, button_height)
+            state = self.button_states.get(button["action"], "normal")
 
-            # Disable start button when running
-            if button["action"] == "start" and self.game.is_running:
-                color = GRAY
+            # --- Xác định gradient và màu chữ ---
+            if state == "active":
+                c1, c2 = purple_blue
+                text_color = WHITE
+            elif state == "flash":
+                c1, c2 = purple_blue
+                text_color = WHITE
             else:
-                color = button["color"]
+                c1, c2, c3 = red_yellow
+                text_color = BLACK
 
-            pygame.draw.rect(self.screen, color, button_rect, border_radius=BUTTON_RADIUS)
+            # Nút Run bị khóa khi đang chạy
+            if button["action"] == "start" and self.game.is_running:
+                c1, c2, c3 = red_yellow
+                text_color = GRAY
 
-            border_width = 1
-            # Đánh dấu nút đang active
-            if (button["action"] == "set_nodes" and self.game.node_placement_mode in ("start", "end")) or \
-            (button["action"] == "set_wall" and self.game.node_placement_mode == "wall"):
-                border_width = 3
-            pygame.draw.rect(self.screen, BLACK, button_rect, border_width, border_radius=BUTTON_RADIUS)
+            # Vẽ gradient
+            if "c3" in locals():
+                Renderer.draw_gradient_rect(self.screen, rect, c1, c2, c3, vertical=False, border_radius=BUTTON_RADIUS)
+            else:
+                Renderer.draw_gradient_rect(self.screen, rect, c1, c2, vertical=False, border_radius=BUTTON_RADIUS)
 
-            text = self.small_josef.render(button["text"], True, WHITE)
-            text_rect = text.get_rect(center=button_rect.center)
+            # Viền
+            border_col = BLACK
+            pygame.draw.rect(self.screen, border_col, rect, 1, border_radius=BUTTON_RADIUS)
+
+            # Text
+            text = self.small_josef.render(button["text"], True, text_color)
+            text_rect = text.get_rect(center=rect.center)
             self.screen.blit(text, text_rect)
 
     def get_control_button_rect(self, i):

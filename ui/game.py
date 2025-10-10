@@ -153,50 +153,139 @@ class MazeGame:
 
         for i, action in enumerate(actions):
             if self.renderer.get_control_button_rect(i).collidepoint(pos):
-                #  Nếu đang chạy, chỉ cho phép nút DỪNG 
-                if self.is_running:
-                    if action == "stop":
+                # #  Nếu đang chạy, chỉ cho phép nút DỪNG 
+                # if self.is_running:
+                #     if action == "stop":
+                #         self.is_running = False
+                #     # Các nút khác bị vô hiệu
+                #     return
+                # if action == "start" and not self.is_running:
+                #     if self.node_placement_mode == "wall":
+                #         self.node_placement_mode = None
+                #     self.start_algorithm()
+                # elif action == "stop":
+                #     self.is_running = False
+                # elif action == "reset":
+                #     self.reset()
+                #     self.default_start_end_node()
+                # elif action == "reset_path":
+                #     self.reset_path()
+                # elif action == "new_maze":
+                #     self.maze, state = generate_maze(MAZE_SIZE)
+                #     self.clear_history()
+                #     self._apply_state(state)
+                #     self.default_start_end_node()
+                # elif action == "beautiful_maze" and not self.is_running:
+                #     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
+                #     self.clear_history()
+                #     self._apply_state(state)
+                #     self.default_start_end_node()
+                # elif action == "set_nodes" and not self.is_running:
+                #     self.reset_path()
+                #     if self.node_placement_mode in ("start", "end"):
+                #         self.node_placement_mode = None
+                #     else:
+                #         self.custom_start = None
+                #         self.custom_end = None
+                #         self.node_placement_mode = "start"
+                # elif action == "set_wall" and not self.is_running:
+                #     self.reset_path()
+                #     if self.node_placement_mode == "wall":
+                #         self.node_placement_mode = None
+                #     else:
+                #         self.node_placement_mode = "wall"
+                # elif action == "statistics":
+                #     self.show_statistics()
+                # return
+                # --- Ưu tiên xử lý STOP trước ---
+                if action == "stop":
+                    if self.is_running:
                         self.is_running = False
-                    # Các nút khác bị vô hiệu
+                    self.renderer.button_states["stop"] = "flash"
+                    pygame.time.set_timer(pygame.USEREVENT + 1, 200, loops=1)
                     return
+
+                # --- Nếu đang chạy thì chỉ cho STOP, các nút khác bị vô hiệu ---
+                if self.is_running:
+                    return
+
+                # --- Logic nhấn nút ---
                 if action == "start" and not self.is_running:
+                    # Nếu đang bật wall thì tắt
                     if self.node_placement_mode == "wall":
                         self.node_placement_mode = None
+                        self.renderer.button_states["set_wall"] = "normal"
+
+                    # Đổi màu nút sang active (tím-xanh)
+                    self.renderer.button_states["start"] = "active"
+
+                    # Vẽ lại ngay để hiển thị thay đổi
+                    self.draw_frame()
+                    pygame.display.flip()
+                    pygame.time.wait(100)  # cho 0.1 giây để update UI
+
+                    # Gọi thuật toán (tự set is_running bên trong)
                     self.start_algorithm()
-                elif action == "stop":
-                    self.is_running = False
+
+                    # Khi chạy xong → trở lại đỏ-vàng
+                    self.renderer.button_states["start"] = "normal"
+
                 elif action == "reset":
                     self.reset()
                     self.default_start_end_node()
+                    self.renderer.button_states["reset"] = "flash"
+
                 elif action == "reset_path":
                     self.reset_path()
+                    self.renderer.button_states["reset_path"] = "flash"
+
                 elif action == "new_maze":
                     self.maze, state = generate_maze(MAZE_SIZE)
                     self.clear_history()
                     self._apply_state(state)
                     self.default_start_end_node()
-                elif action == "beautiful_maze" and not self.is_running:
+                    self.renderer.button_states["new_maze"] = "flash"
+
+                elif action == "beautiful_maze":
                     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
                     self.clear_history()
                     self._apply_state(state)
                     self.default_start_end_node()
-                elif action == "set_nodes" and not self.is_running:
+                    self.renderer.button_states["beautiful_maze"] = "flash"
+
+                elif action == "set_nodes":
                     self.reset_path()
+                    # bật/tắt chế độ đặt node
                     if self.node_placement_mode in ("start", "end"):
                         self.node_placement_mode = None
+                        self.renderer.button_states["set_nodes"] = "normal"
                     else:
                         self.custom_start = None
                         self.custom_end = None
                         self.node_placement_mode = "start"
-                elif action == "set_wall" and not self.is_running:
+                        self.renderer.button_states["set_nodes"] = "active"
+
+                elif action == "set_wall":
                     self.reset_path()
                     if self.node_placement_mode == "wall":
                         self.node_placement_mode = None
+                        self.renderer.button_states["set_wall"] = "normal"
                     else:
                         self.node_placement_mode = "wall"
+                        self.renderer.button_states["set_wall"] = "active"
+
                 elif action == "statistics":
                     self.show_statistics()
-                return
+                    self.renderer.button_states["statistics"] = "flash"
+
+                elif action == "quit":
+                    pygame.quit()
+                    sys.exit()
+
+                # --- Hiệu ứng flash tạm thời ---
+                if self.renderer.button_states[action] == "flash":
+                    pygame.time.set_timer(pygame.USEREVENT + 1, 200, loops=1)
+                
         
         # Check if clicking in maze area for node placement
         if (self.node_placement_mode and not self.is_running and 
@@ -218,6 +307,7 @@ class MazeGame:
                     if self.maze[row][col] == 0 and clicked_node != self.custom_start:
                         self.custom_end = clicked_node
                         self.node_placement_mode = None
+                        self.renderer.button_states["set_nodes"] = "normal"
                 elif self.node_placement_mode == "wall":
                     # Không cho phép thay đổi điểm start/end
                     if clicked_node != self.custom_start and clicked_node != self.custom_end:
@@ -416,6 +506,11 @@ class MazeGame:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.handle_click(event.pos)
+                elif event.type == pygame.USEREVENT + 1:
+                    # Reset các nút flash về normal
+                    for k, v in self.renderer.button_states.items():
+                        if v == "flash":
+                            self.renderer.button_states[k] = "normal"
 
             self.draw_frame()
             self.clock.tick(60)
