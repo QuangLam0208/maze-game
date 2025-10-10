@@ -34,6 +34,11 @@ class MazeGame:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+        self.background = None
+        background_path = "assets/pics/bg-maze-game.png"  # đường dẫn đến ảnh
+        if os.path.exists(background_path):
+            self.background = pygame.image.load(background_path)
+            self.background = pygame.transform.scale(self.background, (WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Maze Pathfinding")
         self.clock = pygame.time.Clock()
         
@@ -88,7 +93,7 @@ class MazeGame:
             "Partial Observable": run_partial_observable_dfs,
             "Backtracking": run_backtracking,
             "Forward Checking": run_forward_checking,
-            "Arc Consistency Algorithm 3": run_ac3_csp,
+            "Arc Consistency 3": run_ac3_csp,
             # ... thêm các thuật toán khác
         }
 
@@ -241,7 +246,7 @@ class MazeGame:
         # Kiểm tra xem cả start và end nodes đã được đặt chưa
         if not hasattr(self, 'custom_start') or not hasattr(self, 'custom_end') or \
            self.custom_start is None or self.custom_end is None:
-            print("⚠ Cần đặt đủ cả Start và End nodes trước khi chạy thuật toán!")
+            print("Cần đặt đủ cả Start và End nodes trước khi chạy thuật toán!")
             return
 
         # Nếu chưa chọn thuật toán con, chạy tất cả thuật toán trong nhóm
@@ -286,7 +291,7 @@ class MazeGame:
 
     def run_all_algorithms_in_group(self):
         """Chạy tất cả thuật toán trong nhóm được chọn"""
-        print("🔄 Đang chạy tất cả thuật toán trong nhóm...")
+        print("Đang chạy tất cả thuật toán trong nhóm...")
         
         # Reset kết quả cũ
         self.group_results = {}
@@ -302,7 +307,7 @@ class MazeGame:
         
         for i, alg_info in enumerate(current_group["algorithms"]):
             alg_name = alg_info["name"]
-            print(f"📊 Đang chạy: {alg_name}")
+            print(f"Đang chạy: {alg_name}")
             
             # Reset trạng thái cho mỗi thuật toán
             self.visited = set()
@@ -362,7 +367,7 @@ class MazeGame:
                         "status": "fail"
                     })
             else:
-                print(f"⚠ Thuật toán {alg_name} chưa được implement")
+                print(f"Thuật toán {alg_name} chưa được implement")
                 
             completed += 1
             print(f" Hoàn thành {completed}/{total_algorithms}")
@@ -377,8 +382,8 @@ class MazeGame:
         if hasattr(self, "history") and len(self.history) > 10:
             self.history = self.history[:10]
         
-        print("🎉 Đã chạy xong tất cả thuật toán trong nhóm!")
-        print("💡 Nhấn vào thuật toán con để xem kết quả của nó")
+        print("Đã chạy xong tất cả thuật toán trong nhóm!")
+        print("Nhấn vào thuật toán con để xem kết quả của nó")
 
     def highlight_algorithm_result(self, algorithm_name):
         """Highlight kết quả của một thuật toán cụ thể"""
@@ -387,11 +392,14 @@ class MazeGame:
             self.path = result['path']
             self.visited = result['visited']
             self.stats = result['stats']
-            print(f"🔍 Đang hiển thị kết quả của {algorithm_name}: {len(self.path)} nodes trong path")
+            print(f"Đang hiển thị kết quả của {algorithm_name}: {len(self.path)} nodes trong path")
 
     def draw_frame(self):
         """Vẽ một frame hoàn chỉnh"""
-        self.screen.fill(WHITE)
+        if self.background:
+            self.screen.blit(self.background, (0, 0))
+        else:
+            self.screen.fill(WHITE)
         
         # Draw all UI elements using renderer
         self.renderer.draw_all()
