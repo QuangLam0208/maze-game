@@ -3,7 +3,6 @@ import sys
 import time
 import os
 from datetime import datetime
-import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -24,6 +23,7 @@ from algorithms.partial_observable import run_partial_observable_dfs
 from algorithms.forward_checking import run_forward_checking
 from algorithms.AC3 import run_ac3_csp
 from algorithms.backtracking import run_backtracking
+from algorithms.minimax import run_minimax
 
 from core.maze_generator import generate_maze, generate_beautiful_maze
 
@@ -89,6 +89,7 @@ class MazeGame:
             "Backtracking": run_backtracking,
             "Forward Checking": run_forward_checking,
             "Arc Consistency Algorithm 3": run_ac3_csp,
+            "Minimax (Player vs Monster)": run_minimax,
             # ... thêm các thuật toán khác
         }
 
@@ -170,11 +171,13 @@ class MazeGame:
                     self.clear_history()
                     self._apply_state(state)
                     self.default_start_end_node()
+                    self.reset_path()  # Reset path khi tạo maze mới
                 elif action == "beautiful_maze" and not self.is_running:
                     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
                     self.clear_history()
                     self._apply_state(state)
                     self.default_start_end_node()
+                    self.reset_path()  # Reset path khi tạo beautiful maze
                 elif action == "set_nodes" and not self.is_running:
                     self.reset_path()
                     if self.node_placement_mode in ("start", "end"):
@@ -286,7 +289,7 @@ class MazeGame:
 
     def run_all_algorithms_in_group(self):
         """Chạy tất cả thuật toán trong nhóm được chọn"""
-        print("🔄 Đang chạy tất cả thuật toán trong nhóm...")
+        print(" Đang chạy tất cả thuật toán trong nhóm...")
         
         # Reset kết quả cũ
         self.group_results = {}
@@ -377,8 +380,8 @@ class MazeGame:
         if hasattr(self, "history") and len(self.history) > 10:
             self.history = self.history[:10]
         
-        print("🎉 Đã chạy xong tất cả thuật toán trong nhóm!")
-        print("💡 Nhấn vào thuật toán con để xem kết quả của nó")
+        print(" Đã chạy xong tất cả thuật toán trong nhóm!")
+        print(" Nhấn vào thuật toán con để xem kết quả của nó")
 
     def highlight_algorithm_result(self, algorithm_name):
         """Highlight kết quả của một thuật toán cụ thể"""
@@ -387,7 +390,7 @@ class MazeGame:
             self.path = result['path']
             self.visited = result['visited']
             self.stats = result['stats']
-            print(f"🔍 Đang hiển thị kết quả của {algorithm_name}: {len(self.path)} nodes trong path")
+            print(f" Đang hiển thị kết quả của {algorithm_name}: {len(self.path)} nodes trong path")
 
     def draw_frame(self):
         """Vẽ một frame hoàn chỉnh"""

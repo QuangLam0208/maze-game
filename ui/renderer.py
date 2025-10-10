@@ -127,11 +127,11 @@ class Renderer:
                 ]
             },
             {
-                "name": "Coming Soon",
+                "name": "Game Theory",
                 "gradient": "red_yellow",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "", "desc": ""},
+                    {"name": "Minimax (Player vs Monster)", "desc": "Đối kháng Min-Max với Alpha-Beta"},
                     {"name": "", "desc": ""},
                     {"name": "", "desc": ""}
                 ]
@@ -493,6 +493,10 @@ class Renderer:
                     color = GRAY
                 elif cell == 1:  # Wall
                     color = BLACK
+                elif (hasattr(self.game, 'player_pos') and (i, j) == self.game.player_pos):  # Player (Max) - Xanh
+                    color = BLUE
+                elif (hasattr(self.game, 'monster_pos') and (i, j) == self.game.monster_pos):  # Monster (Min) - Đỏ
+                    color = RED
                 elif (hasattr(self.game, 'custom_start') and self.game.custom_start is not None and 
                       (i, j) == self.game.custom_start):  # Custom Start
                     color = GREEN
