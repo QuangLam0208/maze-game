@@ -1,5 +1,5 @@
 import math, random
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 from .heuristic import DEFAULT_HEURISTIC
 
 def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristic=DEFAULT_HEURISTIC):
@@ -25,7 +25,10 @@ def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristi
     visited_set = set()
 
     while game.is_running and temperature > 1:
-        step_count, ok = handle_frame(game, step_count)
+        result = handle_frame(game, step_count)
+        if result is None:
+            return
+        step_count, ok = result
         if not ok:
             return
 
@@ -39,6 +42,10 @@ def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristi
 
         visited_set.add((x, y))
         update_game_state(game, x, y, visited_set)
+        
+        # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+        game.path = path
+        
         step_count += 1
         print(f"[Step {step_count}] At {x, y}, cost={cost:.2f}, temp={temperature:.2f}")
 
@@ -78,3 +85,6 @@ def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristi
 
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
