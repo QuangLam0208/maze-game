@@ -149,54 +149,10 @@ class MazeGame:
                 return
 
         # Check control buttons
-        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall", "statistics"]
+        actions = ["start", "stop", "reset_path", "reset", "new_maze", "beautiful_maze", "set_nodes", "set_wall","statistics", "group_statistics"]
 
         for i, action in enumerate(actions):
             if self.renderer.get_control_button_rect(i).collidepoint(pos):
-                # #  Nếu đang chạy, chỉ cho phép nút DỪNG 
-                # if self.is_running:
-                #     if action == "stop":
-                #         self.is_running = False
-                #     # Các nút khác bị vô hiệu
-                #     return
-                # if action == "start" and not self.is_running:
-                #     if self.node_placement_mode == "wall":
-                #         self.node_placement_mode = None
-                #     self.start_algorithm()
-                # elif action == "stop":
-                #     self.is_running = False
-                # elif action == "reset":
-                #     self.reset()
-                #     self.default_start_end_node()
-                # elif action == "reset_path":
-                #     self.reset_path()
-                # elif action == "new_maze":
-                #     self.maze, state = generate_maze(MAZE_SIZE)
-                #     self.clear_history()
-                #     self._apply_state(state)
-                #     self.default_start_end_node()
-                # elif action == "beautiful_maze" and not self.is_running:
-                #     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
-                #     self.clear_history()
-                #     self._apply_state(state)
-                #     self.default_start_end_node()
-                # elif action == "set_nodes" and not self.is_running:
-                #     self.reset_path()
-                #     if self.node_placement_mode in ("start", "end"):
-                #         self.node_placement_mode = None
-                #     else:
-                #         self.custom_start = None
-                #         self.custom_end = None
-                #         self.node_placement_mode = "start"
-                # elif action == "set_wall" and not self.is_running:
-                #     self.reset_path()
-                #     if self.node_placement_mode == "wall":
-                #         self.node_placement_mode = None
-                #     else:
-                #         self.node_placement_mode = "wall"
-                # elif action == "statistics":
-                #     self.show_statistics()
-                # return
                 # --- Ưu tiên xử lý STOP trước ---
                 if action == "stop":
                     if self.is_running:
@@ -278,15 +234,14 @@ class MazeGame:
                     self.show_statistics()
                     self.renderer.button_states["statistics"] = "flash"
 
-                elif action == "quit":
-                    pygame.quit()
-                    sys.exit()
+                elif action == "group_statistics": # Xử lý nút mới
+                    self.show_group_statistics()
+                    self.renderer.button_states["group_statistics"] = "flash"
 
                 # --- Hiệu ứng flash tạm thời ---
                 if self.renderer.button_states[action] == "flash":
                     pygame.time.set_timer(pygame.USEREVENT + 1, 200, loops=1)
-                
-        
+
         # Check if clicking in maze area for node placement
         if (self.node_placement_mode and not self.is_running and 
             pos[0] >= MAZE_OFFSET_X and pos[0] < MAZE_OFFSET_X + MAZE_WIDTH and
@@ -585,6 +540,151 @@ class MazeGame:
         data.sort(key=lambda x: x["name"])
 
         algos = [d["name"] for d in data]
+        
+        # BỔ SUNG: Rút gọn tên thuật toán cho hiển thị trên trục X
+        short_algos = []
+        for name in algos:
+            if 'Breadth-First' in name: short_algos.append('BFS')
+            elif 'Depth-First' in name: short_algos.append('DFS')
+            elif 'Depth-Limited' in name: short_algos.append('DLS')
+            elif 'Uniform Cost' in name: short_algos.append('UCS')
+            elif 'A*' in name: short_algos.append('A*')
+            elif 'Greedy Best' in name: short_algos.append('GBFS')
+            elif 'Simulated Annealing' in name: short_algos.append('SA')
+            elif 'Hill Climbing' in name: short_algos.append('HC')
+            elif 'Arc Consistency' in name: short_algos.append('AC3')
+            elif 'Forward Checking' in name: short_algos.append('FC')
+            elif 'Nondeterministic' in name: short_algos.append('AND-OR')
+            elif 'Unobservable Search' in name: short_algos.append('Unobs')
+            elif 'Partial Observable' in name: short_algos.append('P-Obs')
+            elif 'Backtracking' in name: short_algos.append('BT')
+            elif len(name) > 10: short_algos.append(name.replace(' ', '\n')) # Xuống dòng nếu quá dài
+            else: short_algos.append(name)
+
+        nodes = [d["nodes"] for d in data]
+        
+        # Xử lý time an toàn hơn
+        times = []
+        for d in data:
+            time_str = str(d["time"]).replace("ms", "").strip()
+            try:
+                times.append(float(time_str))
+            except ValueError:
+                times.append(0)
+        
+        fig = plt.figure(figsize=(12, 5))
+
+        # Biểu đồ Nodes
+        ax1 = plt.subplot(1, 2, 1)
+        bars1 = ax1.bar(short_algos, nodes, color="skyblue", edgecolor='navy', alpha=0.7)
+        ax1.set_title("Nodes đã thăm", fontsize=12, fontweight='bold')
+        ax1.set_ylabel("Số lượng nodes")
+        ax1.grid(axis='y', alpha=0.3)
+        ax1.tick_params(axis='x', rotation=0) # Giữ nhãn nằm ngang
+        
+        # Thêm giá trị lên cột
+        for bar in bars1:
+            height = bar.get_height()
+            ax1.text(bar.get_x() + bar.get_width()/2., height,
+                     f'{int(height)}',
+                     ha='center', va='bottom', fontsize=9)
+
+        # Biểu đồ Time
+        ax2 = plt.subplot(1, 2, 2)
+        bars2 = ax2.bar(short_algos, times, color="salmon", edgecolor='darkred', alpha=0.7)
+        ax2.set_title("Thời gian thực thi", fontsize=12, fontweight='bold')
+        ax2.set_ylabel("Thời gian (ms)")
+        ax2.grid(axis='y', alpha=0.3)
+        ax2.tick_params(axis='x', rotation=0) # Giữ nhãn nằm ngang
+        
+        # Thêm giá trị lên cột
+        for bar in bars2:
+            height = bar.get_height()
+            ax2.text(bar.get_x() + bar.get_width()/2., height,
+                     f'{height:.1f}',
+                     ha='center', va='bottom', fontsize=9)
+
+        plt.suptitle("Thống kê So sánh Thuật toán", 
+                     fontsize=14, fontweight='bold')
+        
+        # Bổ sung: Điều chỉnh lề dưới để nhãn không bị chồng lấn/cắt
+        plt.subplots_adjust(bottom=0.25)
+        plt.tight_layout()
+        
+        # Tạo thư mục nếu chưa có
+        stats_dir = "assets/pics/statics"
+        os.makedirs(stats_dir, exist_ok=True)
+        
+        # Lưu ra file với timestamp để không ghi đè
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        stats_file = os.path.join(stats_dir, f"statistics_{timestamp}.png")
+        
+        plt.savefig(stats_file, dpi=100, bbox_inches='tight')
+        plt.close(fig)
+        
+        # Mở file bằng trình xem ảnh mặc định
+        if os.name == 'nt':  # Windows
+            os.startfile(stats_file)
+
+    def get_alg_group_name(self, alg_name):
+        """Tìm tên nhóm của thuật toán, bao gồm cả trường hợp tên bị viết tắt/lưu không chính xác."""
+        name_map = {
+            "GBF": "Greedy Best-First", 
+            "AC-3": "Arc Consistency Algorithm 3", 
+            "Unobservable": "Unobservable Search",
+            "AND-OR Search": "Nondeterministic",
+            "SA": "Simulated Annealing",                   
+            "Beam": "Beam Search",                         
+        }
+        alg_name_to_check = name_map.get(alg_name, alg_name)
+
+        for group in self.renderer.algorithm_groups:
+            for alg in group["algorithms"]:
+                if alg["name"] == alg_name_to_check:
+                    return group["name"]
+        
+        return "Khác" 
+    
+    def show_group_statistics(self):
+        if not self.history:
+            print("Chưa có dữ liệu lịch sử để thống kê theo nhóm!")
+            return
+
+        # 1. Gom các kết quả lịch sử theo nhóm và tìm kết quả tốt nhất (Nodes visited ít nhất)
+        best_in_group = {}
+        
+        # Chỉ xem xét các thuật toán tìm được path (length != 0)
+        valid_history = [d for d in self.history if d.get("length", 0) != 0]
+
+        if not valid_history:
+            print("Không có thuật toán nào tìm được đích để thống kê theo nhóm!")
+            return
+
+        for entry in valid_history:
+            alg_name = entry["name"]
+            group_name = self.get_alg_group_name(alg_name)
+            
+            if group_name not in best_in_group or entry["nodes"] < best_in_group[group_name]["nodes"]:
+                best_in_group[group_name] = entry
+        
+        # 2. Chuẩn bị dữ liệu cho đồ thị
+        data = list(best_in_group.values())
+        
+        # Loại bỏ nhóm "Coming Soon" và sắp xếp theo tên nhóm
+        data = [d for d in data if self.get_alg_group_name(d['name']) != "Coming Soon"]
+        data.sort(key=lambda x: self.get_alg_group_name(x['name']))
+
+        # Rút gọn tên nhóm cho hiển thị trên trục X
+        group_names_long = [self.get_alg_group_name(d["name"]) for d in data]
+        short_group_names = []
+        for name in group_names_long:
+            if name == "Uninformed Search": short_group_names.append("Uninf. Search")
+            elif name == "Informed Search": short_group_names.append("Inf. Search")
+            elif name == "Local Search": short_group_names.append("Local Search")
+            elif name == "Complex Environment": short_group_names.append("Complex Env.")
+            elif name == "Constraint Satisfied": short_group_names.append("CSP")
+            else: short_group_names.append(name)
+            
         nodes = [d["nodes"] for d in data]
         
         # Xử lý time an toàn hơn
@@ -596,51 +696,59 @@ class MazeGame:
             except ValueError:
                 times.append(0)
 
-        # Sử dụng backend Agg để không tạo cửa sổ tương tác
-        
+        # 3. Vẽ đồ thị (giống show_statistics nhưng đổi tiêu đề và label)
         fig = plt.figure(figsize=(12, 5))
 
         # Biểu đồ Nodes
         ax1 = plt.subplot(1, 2, 1)
-        bars1 = ax1.bar(algos, nodes, color="skyblue", edgecolor='navy', alpha=0.7)
-        ax1.set_title("Nodes đã thăm", fontsize=12, fontweight='bold')
+        bars1 = ax1.bar(short_group_names, nodes, color="skyblue", edgecolor='navy', alpha=0.7)
+        ax1.set_title("Nodes đã thăm (Thuật toán tốt nhất mỗi nhóm)", fontsize=12, fontweight='bold')
         ax1.set_ylabel("Số lượng nodes")
+        ax1.set_xlabel("Nhóm Thuật toán")
         ax1.grid(axis='y', alpha=0.3)
-        ax1.tick_params(axis='x', rotation=0)
+        ax1.tick_params(axis='x', rotation=0) # Giữ nhãn nằm ngang
         
-        # Thêm giá trị lên cột
-        for bar in bars1:
+        # Thêm giá trị lên cột (Tên thuật toán + Giá trị)
+        for bar, d in zip(bars1, data):
             height = bar.get_height()
+            # Lấy tên rút gọn của thuật toán cho hiển thị trên bar
+            display_name = d["name"].split(' ')[0] # Thường là tên viết tắt/ngắn gọn đầu tiên
             ax1.text(bar.get_x() + bar.get_width()/2., height,
-                    f'{int(height)}',
-                    ha='center', va='bottom', fontsize=9)
+                     f'{display_name}\n{int(height)}',
+                     ha='center', va='bottom', fontsize=8)
+
 
         # Biểu đồ Time
         ax2 = plt.subplot(1, 2, 2)
-        bars2 = ax2.bar(algos, times, color="salmon", edgecolor='darkred', alpha=0.7)
-        ax2.set_title("Thời gian thực thi", fontsize=12, fontweight='bold')
+        bars2 = ax2.bar(short_group_names, times, color="salmon", edgecolor='darkred', alpha=0.7)
+        ax2.set_title("Thời gian thực thi (Thuật toán tốt nhất mỗi nhóm)", fontsize=12, fontweight='bold')
         ax2.set_ylabel("Thời gian (ms)")
+        ax2.set_xlabel("Nhóm Thuật toán")
         ax2.grid(axis='y', alpha=0.3)
-        ax2.tick_params(axis='x', rotation=0)
+        ax2.tick_params(axis='x', rotation=0) # Giữ nhãn nằm ngang
         
-        # Thêm giá trị lên cột
-        for bar in bars2:
+        # Thêm giá trị lên cột (Tên thuật toán + Giá trị)
+        for bar, d in zip(bars2, data):
             height = bar.get_height()
+            display_name = d["name"].split(' ')[0]
             ax2.text(bar.get_x() + bar.get_width()/2., height,
-                    f'{height:.1f}',
-                    ha='center', va='bottom', fontsize=9)
+                     f'{display_name}\n{height:.1f}',
+                     ha='center', va='bottom', fontsize=8)
 
-        plt.suptitle("Thống kê So sánh Thuật toán", 
+
+        plt.suptitle("Thống kê So sánh Thuật toán Tốt nhất theo Nhóm", 
                      fontsize=14, fontweight='bold')
+        
+        # Bổ sung: Điều chỉnh lề dưới để nhãn không bị chồng lấn/cắt
+        plt.subplots_adjust(bottom=0.25) 
         plt.tight_layout()
         
-        # Tạo thư mục nếu chưa có
+        # Lưu ra file
         stats_dir = "assets/pics/statics"
         os.makedirs(stats_dir, exist_ok=True)
         
-        # Lưu ra file với timestamp để không ghi đè
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        stats_file = os.path.join(stats_dir, f"statistics_{timestamp}.png")
+        stats_file = os.path.join(stats_dir, f"group_statistics_{timestamp}.png")
         
         plt.savefig(stats_file, dpi=100, bbox_inches='tight')
         plt.close(fig)

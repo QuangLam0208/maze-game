@@ -164,7 +164,7 @@ class Renderer:
             "set_nodes": "normal",
             "set_wall": "normal",
             "statistics": "normal",
-            "quit": "active"  # luôn tím-xanh
+            "group_statistics": "normal"
         }
 
     def draw_gradient_rect(surface, rect, color1, color2, color3=None, vertical=True, border_radius=0):
@@ -426,7 +426,7 @@ class Renderer:
             {"text": "Start/End", "action": "set_nodes"},
             {"text": "Wall", "action": "set_wall"},
             {"text": "Statistic", "action": "statistics"},
-            {"text": "Quit", "action": "quit"}
+            {"text": "Group Statistic", "action": "group_statistics"}
         ]
 
         # --- Cấu hình layout ---

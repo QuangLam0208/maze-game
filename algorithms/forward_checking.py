@@ -11,7 +11,7 @@ def run_forward_checking(game):
     - Khi backtrack: restore domain.
     """
 
-    game.alg_name = "Forward Checking (CSP)"
+    game.alg_name = "Forward Checking"
 
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:

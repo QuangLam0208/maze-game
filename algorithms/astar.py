@@ -10,7 +10,7 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame, 
 def run_astar(game):
     """Chạy thuật toán A* cho MazeGame"""
     
-    game.alg_name = "Astar"
+    game.alg_name = "A* Search"
 
     # Sử dụng custom start và end nếu có
     start_pos = getattr(game, 'custom_start', (0, 0))
