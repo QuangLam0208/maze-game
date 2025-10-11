@@ -1,10 +1,10 @@
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 
 def run_dls(game):
     """Chạy Depth-Limited Search"""
 
-    game.alg_name = "DLS"
+    game.alg_name = "Depth-Limited Search"
 
     # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
     start_pos = getattr(game, 'custom_start', (0, 0))
@@ -19,6 +19,9 @@ def run_dls(game):
         game.stats["path_length"] = len(path)
     game.is_running = False
     game.current_node = None
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
 
 
 def Recursive_DLS(game, x, y, current_path, visited_set, limit, step_count):
@@ -34,12 +37,18 @@ def Recursive_DLS(game, x, y, current_path, visited_set, limit, step_count):
             return None
         
     # animation & sự kiện   
-    step_count, ok = handle_frame(game, step_count)
+    result = handle_frame(game, step_count)
+    if result is None:
+        return None
+    step_count, ok = result
     if not ok:
         return None
 
     # cập nhật trạng thái node hiện tại
     update_game_state(game, x, y, visited_set)
+    
+    # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
+    game.path = current_path + [(x, y)]
 
     # Nếu tới Goal
     if check_goal(game, x, y, current_path):

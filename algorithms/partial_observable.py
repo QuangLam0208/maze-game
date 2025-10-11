@@ -1,7 +1,7 @@
 from collections import deque
 import pygame
 import time
-from utils.algorithm_runner import update_game_state, check_goal, handle_frame
+from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 def run_partial_observable_dfs(game, vision_range=1):
     """
@@ -54,6 +54,10 @@ def run_partial_observable_dfs(game, vision_range=1):
         step_count += 1
         observe(x, y)  # Cập nhật kiến thức khi đứng tại (x, y)
 
+        # Cập nhật đường đi hiện tại và node đang xét để hiển thị màu vàng
+        game.path = current_path + [(x, y)]
+        game.current_node = (x, y)
+
         # Kiểm tra goal
         if check_goal(game, x, y, current_path):
             break
@@ -74,6 +78,9 @@ def run_partial_observable_dfs(game, vision_range=1):
     game.current_node = None
     if hasattr(game, "visible_cells"):
         delattr(game, "visible_cells")
+    
+    # Add to history if no path was found
+    algorithm_finished(game)
 
 def run_partial_observable_bfs(game, vision_range=1):
     """
@@ -125,6 +132,10 @@ def run_partial_observable_bfs(game, vision_range=1):
         step_count += 1
         observe(x, y)
 
+        # Cập nhật đường đi hiện tại và node đang xét để hiển thị màu vàng
+        game.path = current_path + [(x, y)]
+        game.current_node = (x, y)
+
         # Kiểm tra goal
         if check_goal(game, x, y, current_path):
             break
@@ -145,3 +156,6 @@ def run_partial_observable_bfs(game, vision_range=1):
     game.current_node = None
     if hasattr(game, "visible_cells"):
         delattr(game, "visible_cells")
+    
+    # Add to history if no path was found  
+    algorithm_finished(game)

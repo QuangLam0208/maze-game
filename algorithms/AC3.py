@@ -12,7 +12,7 @@ def run_ac3_csp(game):
     - Backtracking: nếu AC-3 phát hiện domain rỗng → quay lui (backtrack).
     """
 
-    game.alg_name = "AC-3 (CSP - Maze)"
+    game.alg_name = "AC-3"
 
     # Lấy vị trí start và goal
     start_pos = getattr(game, 'custom_start', (0, 0))
@@ -36,6 +36,9 @@ def run_ac3_csp(game):
     domains = {cell: set(all_cells) for cell in all_cells}
 
     visited = set()
+    
+    # Khởi tạo backtracked_nodes để theo dõi các node đã đi qua
+    game.backtracked_nodes = set()
 
     def ac3(domains):
         """
@@ -99,6 +102,11 @@ def run_ac3_csp(game):
 
         # Đánh dấu đang thăm
         update_game_state(game, x, y, visited)
+        
+        # Cập nhật đường đi hiện tại để hiển thị màu vàng cho node đang xét
+        game.path = path + [(x, y)]
+        game.current_node = (x, y)
+        
         game.draw_frame()
         pygame.time.wait(80)
 
@@ -121,8 +129,19 @@ def run_ac3_csp(game):
             for (var, val) in pruned:
                 domains[var].add(val)
             visited.remove((x, y))
+            
+            # Chuyển node sang backtracked_nodes thay vì xóa khỏi game.visited
             if (x, y) in game.visited:
                 game.visited.remove((x, y))
+                game.backtracked_nodes.add((x, y))
+                
+                # Cập nhật path và current_node khi backtrack
+                game.path = path
+                if path:
+                    game.current_node = path[-1]
+                else:
+                    game.current_node = None
+                    
                 game.draw_frame()
                 pygame.time.wait(50)
             return False
@@ -136,8 +155,19 @@ def run_ac3_csp(game):
 
         # Backtrack 
         visited.remove((x, y))
+        
+        # Chuyển node sang backtracked_nodes thay vì xóa khỏi game.visited
         if (x, y) in game.visited:
             game.visited.remove((x, y))
+            game.backtracked_nodes.add((x, y))
+            
+            # Cập nhật path và current_node khi backtrack
+            game.path = path
+            if path:
+                game.current_node = path[-1]
+            else:
+                game.current_node = None
+                
             game.draw_frame()
             pygame.time.wait(50)
 
