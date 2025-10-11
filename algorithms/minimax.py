@@ -9,12 +9,12 @@ def manhattan_distance(pos1, pos2):
 
 def run_minimax(game):
     """
-    Thuật toán Minimax thuần túy (không Alpha-Beta pruning):
-    - Max Player (Xanh): Cố gắng đến goal, tránh Monster
-    - Min Monster (Đỏ): Cố gắng bắt Player
-    - Sử dụng Minimax đơn giản với simultaneous moves
+    Thuật toán Minimax cải tiến:
+    - Player: Tìm đường đến goal nhưng TRÁNH Monster 
+    - Monster: Di chuyển 2 ô mỗi lượt để đuổi theo Player
+    - Sử dụng Minimax thuần túy với defensive strategy
     """
-    game.alg_name = "Minimax Pure (Player vs Monster)"
+    game.alg_name = "Minimax Defense (Player vs Fast Monster)"
 
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
@@ -68,19 +68,77 @@ def run_minimax(game):
     game.player_pos = player_pos
     game.monster_pos = monster_pos
     
-    def get_possible_moves(pos, is_player=True, recent_positions=None):
+    def get_possible_moves(pos, is_player=True, recent_positions=None, target_pos=None):
         """Lấy các nước đi hợp lệ từ vị trí, tránh vòng lặp"""
         moves = []
         x, y = pos
         
-        # Tất cả hướng di chuyển, không có đứng yên
-        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        if is_player:
+            # Player di chuyển 1 ô mỗi lượt
+            directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+            for dx, dy in directions:
+                new_x, new_y = x + dx, y + dy
+                if (0 <= new_x < len(game.maze) and 0 <= new_y < len(game.maze[0]) and 
+                    game.maze[new_x][new_y] == 0):
+                    moves.append((new_x, new_y))
+        else:
+            # Monster di chuyển tối đa 2 ô mỗi lượt về phía Player - HIỆU QUẢ HỒN
+            if not target_pos:
+                moves.append(pos)  # Đứng yên nếu không có target
+                return moves
             
-        for dx, dy in directions:
-            new_x, new_y = x + dx, y + dy
-            if (0 <= new_x < len(game.maze) and 0 <= new_y < len(game.maze[0]) and 
-                game.maze[new_x][new_y] == 0):
-                moves.append((new_x, new_y))
+            # Tính khoảng cách hiện tại đến Player
+            current_dist = manhattan_distance(pos, target_pos)
+            
+            # Thử tất cả các combo di chuyển có thể và đánh giá hiệu quả
+            move_candidates = []
+            
+            # Thử di chuyển 1 ô theo tất cả hướng
+            all_dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+            for dx, dy in all_dirs:
+                mid_x, mid_y = x + dx, y + dy
+                if (0 <= mid_x < len(game.maze) and 0 <= mid_y < len(game.maze[0]) and 
+                    game.maze[mid_x][mid_y] == 0):
+                    
+                    # Đánh giá move 1 ô
+                    dist_1_step = manhattan_distance((mid_x, mid_y), target_pos)
+                    improvement_1 = current_dist - dist_1_step
+                    move_candidates.append((improvement_1, (mid_x, mid_y)))
+                    
+                    # Thử tiếp di chuyển ô thứ 2 theo cùng hướng
+                    final_x, final_y = mid_x + dx, mid_y + dy
+                    if (0 <= final_x < len(game.maze) and 0 <= final_y < len(game.maze[0]) and 
+                        game.maze[final_x][final_y] == 0):
+                        dist_2_step = manhattan_distance((final_x, final_y), target_pos)
+                        improvement_2 = current_dist - dist_2_step
+                        move_candidates.append((improvement_2, (final_x, final_y)))
+                    
+                    # Thử di chuyển ô thứ 2 theo hướng khác (di chuyển chéo)
+                    for dx2, dy2 in all_dirs:
+                        if (dx2, dy2) != (dx, dy):  # Hướng khác
+                            final_x, final_y = mid_x + dx2, mid_y + dy2
+                            if (0 <= final_x < len(game.maze) and 0 <= final_y < len(game.maze[0]) and 
+                                game.maze[final_x][final_y] == 0):
+                                dist_corner = manhattan_distance((final_x, final_y), target_pos)
+                                improvement_corner = current_dist - dist_corner
+                                move_candidates.append((improvement_corner, (final_x, final_y)))
+            
+            # Sắp xếp theo mức độ cải thiện (tốt nhất trước)
+            move_candidates.sort(reverse=True, key=lambda x: x[0])
+            
+            # Lấy các moves tốt nhất (chỉ những moves cải thiện khoảng cách)
+            for improvement, move in move_candidates:
+                if improvement > 0:  # Chỉ lấy moves làm gần Player hơn
+                    moves.append(move)
+            
+            # Nếu không có move nào cải thiện, lấy move ít xấu nhất
+            if not moves and move_candidates:
+                moves.append(move_candidates[0][1])
+            
+            # Loại bỏ trùng lặp và giới hạn số lượng
+            moves = list(dict.fromkeys(moves))  # Giữ thứ tự và loại trùng
+            if len(moves) > 6:  # Giới hạn để tránh quá nhiều options
+                moves = moves[:6]
         
         # Tránh vòng lặp: ưu tiên moves chưa đi gần đây
         if recent_positions and len(moves) > 1:
@@ -104,8 +162,8 @@ def run_minimax(game):
     def evaluate_state(player_pos, monster_pos, player_prev=None, monster_prev=None):
         """
         Hàm đánh giá trạng thái:
-        - Positive: Tốt cho Max (Player)
-        - Negative: Tốt cho Min (Monster)
+        - Player tìm đường đến goal nhưng TRÁNH Monster
+        - Monster đuổi theo Player với tốc độ 2 ô/lượt
         """
         # Khoảng cách từ player đến goal
         dist_to_goal = manhattan_distance(player_pos, goal_pos)
@@ -121,14 +179,29 @@ def run_minimax(game):
         if player_pos == monster_pos:
             return -1000
         
-        # Heuristic cải tiến - ưu tiên SIÊU MẠNH
+        # Heuristic cân bằng: Player tránh Monster, Monster tích cực bắt Player
         score = 0
         
-        # Player: SIÊU MẠNH ưu tiên tiến về goal (quan trọng nhất!)
-        score -= dist_to_goal * 100  # Tăng lên 100 để goal là ưu tiên tuyệt đối
+        # 1. Player ưu tiên tiến về goal (nhưng không quá cao)
+        score -= dist_to_goal * 20
         
-        # Monster: Mạnh ưu tiên tiến gần player (ưu tiên thứ hai)
-        score += dist_player_monster * 20  # Giảm xuống để không cản trở Player về goal
+        # 2. Monster ưu tiên BẮT Player (MỨC ĐỘ CAO NHẤT!)
+        if dist_player_monster <= 2:  # Monster rất gần = cực kỳ nguy hiểm cho Player
+            score -= dist_player_monster * 100  # Tăng MẠNH để Monster ưu tiên bắt
+        elif dist_player_monster <= 4:  # Monster gần = nguy hiểm
+            score -= dist_player_monster * 60
+        else:  # Monster xa = Monster cần tiến gần
+            score -= dist_player_monster * 30
+        
+        # 3. Player MẠNH MẼ tránh Monster khi gần
+        if dist_player_monster <= 3:  # Monster gần = Player cần tránh gấp
+            score += dist_player_monster * 80  # Bonus MẠNH cho việc xa Monster
+        elif dist_player_monster <= 5:  # Monster hơi gần = cẩn thận
+            score += dist_player_monster * 40
+        
+        # 4. Khi Player an toàn (Monster xa), tập trung về goal
+        if dist_player_monster > 5:
+            score -= dist_to_goal * 15  # Tăng ưu tiên goal khi an toàn
         
         # Bonus mạnh cho việc di chuyển đúng hướng
         if player_prev and player_pos != player_prev:
@@ -179,7 +252,7 @@ def run_minimax(game):
         best_monster_move = None
         
         player_moves = get_possible_moves(player_pos, is_player=True, recent_positions=player_hist)
-        monster_moves = get_possible_moves(monster_pos, is_player=False, recent_positions=monster_hist)
+        monster_moves = get_possible_moves(monster_pos, is_player=False, recent_positions=monster_hist, target_pos=player_pos)
         
         # Thử tất cả kết hợp player-monster moves
         for p_move in player_moves:
@@ -194,28 +267,56 @@ def run_minimax(game):
                 eval_score, _, _ = minimax_pure(p_move, m_move, depth-1, 
                                               new_player_hist, new_monster_hist)
                 
-                # Player perspective: SIÊU MẠNH ưu tiên goal
-                # Bonus SIÊU MẠNH cho Player tiến về goal
+                # Player perspective: Cân bằng giữa goal và tránh Monster
                 goal_dist_current = manhattan_distance(player_pos, goal_pos)
                 goal_dist_new = manhattan_distance(p_move, goal_pos)
+                monster_dist_current = manhattan_distance(player_pos, monster_pos)
+                monster_dist_new = manhattan_distance(p_move, m_move)
+                
+                # Bonus cho Player tiến về goal (nhưng không quá mạnh)
                 if goal_dist_new < goal_dist_current:
-                    eval_score += 50  # Tăng lên 50 - goal là ưu tiên tuyệt đối
+                    eval_score += 15
                 elif goal_dist_new > goal_dist_current:
-                    eval_score -= 30  # Penalty MẠNH cho việc xa goal hơn
+                    eval_score -= 10
+                
+                # Bonus MẠNH cho Player tránh Monster
+                if monster_dist_current <= 3:  # Monster gần = ưu tiên tránh
+                    if monster_dist_new > monster_dist_current:
+                        eval_score += 25  # Bonus lớn cho việc tránh Monster
+                    else:
+                        eval_score -= 20  # Penalty cho việc đến gần Monster
+                elif monster_dist_current <= 5:  # Monster hơi gần = cẩn thận
+                    if monster_dist_new > monster_dist_current:
+                        eval_score += 10
+                    else:
+                        eval_score -= 8
                 
                 # Penalty cho Player quay lại vị trí cũ
                 if player_hist and p_move in player_hist[-3:]:
                     penalty = len([pos for pos in player_hist[-3:] if pos == p_move]) * 5
                     eval_score -= penalty  # Tăng penalty
                 
-                # Monster perspective: MẠNH MẼ ưu tiên đuổi theo Player
-                # Bonus MẠNH cho Monster tiến gần Player
+                # Monster perspective: SIÊU TÍCH CỰC đuổi theo Player
                 player_dist_current = manhattan_distance(monster_pos, player_pos)
-                player_dist_new = manhattan_distance(m_move, player_pos)
-                if player_dist_new < player_dist_current:
-                    eval_score -= 20  # Tăng MẠNH bonus cho Monster (xấu cho Player)
-                elif player_dist_new > player_dist_current:
-                    eval_score += 8   # Penalty cho Monster xa Player (tốt cho Player)
+                player_dist_new = manhattan_distance(m_move, p_move)  # Khoảng cách sau khi cả hai di chuyển
+                
+                # Bonus MẠNH MẼ cho Monster tiến gần Player
+                distance_improvement = player_dist_current - player_dist_new
+                if distance_improvement > 0:  # Monster tiến gần Player
+                    # Bonus tăng theo cấp số khi Monster gần Player
+                    if player_dist_new <= 2:  # Rất gần = bonus cực lớn
+                        eval_score -= distance_improvement * 50
+                    elif player_dist_new <= 4:  # Gần = bonus lớn
+                        eval_score -= distance_improvement * 30
+                    else:  # Xa = bonus thường
+                        eval_score -= distance_improvement * 20
+                elif distance_improvement < 0:  # Monster xa Player hơn
+                    penalty = abs(distance_improvement) * 15
+                    eval_score += penalty  # Penalty cho Monster
+                
+                # Bonus đặc biệt nếu Monster có thể bắt Player trong 1-2 move
+                if player_dist_new <= 1:  # Monster sắp bắt được Player
+                    eval_score -= 100  # Bonus cực lớn cho tình huống này
                 
                 # Monster penalty cho việc quay lại
                 if monster_hist and m_move in monster_hist[-2:]:
@@ -257,12 +358,15 @@ def run_minimax(game):
         
         # Kiểm tra điều kiện thắng/thua
         if player_pos == goal_pos:
-            print(" Player (Max) thắng! Đã đến đích!")
+            print("🎉 PLAYER THẮNG! 🎉")
+            print("Player đã đến được đích thành công!")
             game_over = True
             break
         
         if player_pos == monster_pos:
-            print(" Monster (Min) thắng! Đã bắt được Player!")
+            print("💀 GAME OVER! 💀")
+            print("Monster đã bắt được Player!")
+            print(f"Player bị bắt tại vị trí: {player_pos}")
             game_over = True
             break
         
