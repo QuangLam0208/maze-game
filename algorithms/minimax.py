@@ -241,7 +241,7 @@ def run_minimax(game):
         score = 0
         
         # Player ưu tiên goal với BFS distance (chính xác hơn)
-        score -= real_dist_to_goal * 80  # Tăng weight vì BFS distance chính xác hơn
+        score -= real_dist_to_goal * 300  # Tăng weight vì BFS distance chính xác hơn
         
         # Monster ưu tiên BẮT Player (trùng vị trí) - mục tiêu dừng game
         if dist_player_monster == 0:
@@ -295,7 +295,7 @@ def run_minimax(game):
             return evaluate_state(player_pos, monster_pos, p_prev, m_prev), None, None
         
         if player_pos == goal_pos:
-            return 1000, None, None
+            return 1200, None, None
         if player_pos == monster_pos:
             return -1000, None, None
         
