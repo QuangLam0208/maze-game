@@ -12,7 +12,7 @@ def run_ac3_csp(game):
     - Backtracking: nếu AC-3 phát hiện domain rỗng → quay lui (backtrack).
     """
 
-    game.alg_name = "AC-3 (CSP - Maze)"
+    game.alg_name = "AC-3"
 
     # Lấy vị trí start và goal
     start_pos = getattr(game, 'custom_start', (0, 0))

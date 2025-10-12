@@ -7,7 +7,7 @@ def run_unobservable_dfs(game):
     """
     DFS trong môi trường hoàn toàn không nhìn thấy (unobservable / blind search)
     """
-    game.alg_name = "Unobservable (DFS)"
+    game.alg_name = "Unobservable"
 
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
