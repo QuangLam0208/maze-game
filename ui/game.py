@@ -128,6 +128,7 @@ class MazeGame:
                     self.reset_path()  # Reset current path display
                     self.group_results = {}  # Clear previous group results
                     self.selected_result_algorithm = None  # Clear result selection
+                    self.reset_player_monster()  # Reset Player và Monster positions
                 
                 self.selected_group = i
                 self.selected_algorithm = -1  # Không auto-chọn thuật toán nào
@@ -137,6 +138,10 @@ class MazeGame:
         current_group = self.renderer.algorithm_groups[self.selected_group]
         for i, alg in enumerate(current_group["algorithms"]):
             if self.renderer.get_algorithm_button_rect(self.selected_group, i).collidepoint(pos):
+                # Reset Player và Monster khi chọn thuật toán khác
+                if self.selected_algorithm != i:
+                    self.reset_player_monster()
+                    
                 self.selected_algorithm = i
                 # Nếu đã chạy tất cả thuật toán trong nhóm, highlight kết quả thuật toán này
                 if self.group_results:
@@ -172,12 +177,14 @@ class MazeGame:
                     self._apply_state(state)
                     self.default_start_end_node()
                     self.reset_path()  # Reset path khi tạo maze mới
+                    self.reset_player_monster()  # Reset Player và Monster positions
                 elif action == "beautiful_maze" and not self.is_running:
                     self.maze, state = generate_beautiful_maze(MAZE_SIZE)
                     self.clear_history()
                     self._apply_state(state)
                     self.default_start_end_node()
                     self.reset_path()  # Reset path khi tạo beautiful maze
+                    self.reset_player_monster()  # Reset Player và Monster positions
                 elif action == "set_nodes" and not self.is_running:
                     self.reset_path()
                     if self.node_placement_mode in ("start", "end"):
@@ -432,6 +439,9 @@ class MazeGame:
         self.group_results = {}
         self.selected_result_algorithm = None
         
+        # Reset Player và Monster positions
+        self.reset_player_monster()
+        
         self.clear_history()
 
         # remove partial-observable artifacts so renderer will draw full maze
@@ -439,6 +449,13 @@ class MazeGame:
             delattr(self, "known_maze")
         if hasattr(self, "visible_cells"):
             delattr(self, "visible_cells")
+            
+    def reset_player_monster(self):
+        """Reset vị trí Player và Monster khi đổi maze hoặc thuật toán"""
+        if hasattr(self, 'player_pos'):
+            delattr(self, 'player_pos')
+        if hasattr(self, 'monster_pos'):
+            delattr(self, 'monster_pos')
             
     def reset_path(self):
         """Chỉ reset path và visited, giữ nguyên maze"""
@@ -452,6 +469,10 @@ class MazeGame:
         # Clear group results
         self.group_results = {}
         self.selected_result_algorithm = None
+        
+        # Reset Player và Monster positions
+        self.reset_player_monster()
+        
         # Nếu trước đó đang dùng partial-observable, xóa known_maze / visible_cells
         if hasattr(self, "known_maze"):
             delattr(self, "known_maze")
