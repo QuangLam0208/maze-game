@@ -50,7 +50,7 @@ PARENT_CHILD_SPACING = 30 # khoảng cách giữa nhóm cha và nhóm con
 # --- MAZE ---
 MAZE_OFFSET_X = ALG_LEFT + GROUP_BUTTON_WIDTH + 90 
 MAZE_OFFSET_Y = 60
-MAZE_SIZE = 24
+MAZE_SIZE = 25
 CELL_SIZE = 24
 MAZE_WIDTH = MAZE_HEIGHT = MAZE_SIZE * CELL_SIZE
 
@@ -143,11 +143,11 @@ class Renderer:
                 ]
             },
             {
-                "name": "Coming Soon",
+                "name": "Game Theory",
                 "gradient": "red_yellow",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "", "desc": ""},
+                    {"name": "Minimax (Player vs Monster)", "desc": "Đối kháng Min-Max "},
                     {"name": "", "desc": ""},
                     {"name": "", "desc": ""}
                 ]
@@ -585,6 +585,10 @@ class Renderer:
                     color = UNKNOWN_COLOR
                 elif cell == 1:  # Wall
                     color = WALL_COLOR
+                elif (hasattr(self.game, 'player_pos') and (i, j) == self.game.player_pos):  # Player (Max) - Xanh
+                    color = BLUE
+                elif (hasattr(self.game, 'monster_pos') and (i, j) == self.game.monster_pos):  # Monster (Min) - Đỏ
+                    color = RED
                 elif (hasattr(self.game, 'custom_start') and self.game.custom_start is not None and 
                       (i, j) == self.game.custom_start):  # Custom Start
                     color = START_COLOR
