@@ -2,19 +2,81 @@ from utils.algorithm_runner import update_game_state, check_goal, handle_frame, 
 import pygame
 import time
 import math
+from collections import deque
 
 def manhattan_distance(pos1, pos2):
     """Tính khoảng cách Manhattan"""
     return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
+# Global cache cho BFS distance để tối ưu performance
+_bfs_distance_cache = {}
+
+def bfs_real_distance(game, start, goal):
+    """
+    Tính khoảng cách thực tế từ start đến goal qua đường hợp lệ bằng BFS
+    Trả về: (distance, path) hoặc (float('inf'), []) nếu không có đường
+    """
+    cache_key = (start, goal)
+    if cache_key in _bfs_distance_cache:
+        return _bfs_distance_cache[cache_key]
+    
+    if start == goal:
+        _bfs_distance_cache[cache_key] = (0, [start])
+        return (0, [start])
+    
+    queue = deque([(start, 0, [start])])  # (position, distance, path)
+    visited = {start}
+    
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+    
+    while queue:
+        current_pos, dist, path = queue.popleft()
+        
+        for dx, dy in directions:
+            x, y = current_pos
+            new_x, new_y = x + dx, y + dy
+            new_pos = (new_x, new_y)
+            
+            # Kiểm tra tính hợp lệ của move
+            if (0 <= new_x < len(game.maze) and 
+                0 <= new_y < len(game.maze[0]) and 
+                game.maze[new_x][new_y] == 0 and  # 0 là đường đi
+                new_pos not in visited):
+                
+                new_distance = dist + 1
+                new_path = path + [new_pos]
+                
+                if new_pos == goal:
+                    result = (new_distance, new_path)
+                    _bfs_distance_cache[cache_key] = result
+                    return result
+                
+                visited.add(new_pos)
+                queue.append((new_pos, new_distance, new_path))
+    
+    # Không tìm được đường đi
+    result = (float('inf'), [])
+    _bfs_distance_cache[cache_key] = result
+    return result
+
+def validate_path_exists(game, player_pos, goal_pos):
+    """
+    Kiểm tra xem có đường đi từ player đến goal không
+    Trả về: (có_đường_đi, khoảng_cách, đường_đi)
+    """
+    distance, path = bfs_real_distance(game, player_pos, goal_pos)
+    has_path = distance != float('inf')
+    return (has_path, distance, path)
+
 def run_minimax(game):
     """
-    Thuật toán Minimax tối ưu:
-    - Player: Siêu ưu tiên goal, chỉ né Monster khi cực gần
-    - Monster: Di chuyển 2 ô/lượt đuổi Player tích cực
-    - Code đã được tối ưu và làm gọn
+    Thuật toán Minimax cải tiến với BFS validation:
+    - Trước mỗi lượt: chạy BFS từ Player đến Goal để đảm bảo có đường đi
+    - Sử dụng khoảng cách thực tế qua đường hợp lệ thay vì Manhattan
+    - Monster: Goal Guardian + Active Hunter
+    - Player: Tránh ngõ cụt và tìm đường tối ưu
     """
-    game.alg_name = "Minimax Optimized (Aggressive Goal-Seeking)"
+    game.alg_name = "Minimax"
 
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
@@ -27,33 +89,18 @@ def run_minimax(game):
     # Vị trí ban đầu
     player_pos = start_pos  # Max player (xanh)
     
-    # Tìm vị trí hợp lệ cho monster (xa player nhất có thể, nhưng không trùng goal)
-    monster_pos = None
-    max_distance = 0
-    for i in range(len(game.maze)):
-        for j in range(len(game.maze[0])):
-            if (game.maze[i][j] == 0 and  # Vị trí hợp lệ
-                (i, j) != goal_pos and    # Không trùng goal
-                (i, j) != player_pos):    # Không trùng player
-                distance = manhattan_distance((i, j), player_pos)
-                if distance > max_distance:
-                    max_distance = distance
-                    monster_pos = (i, j)
+    # Monster luôn đặt ở goal để bảo vệ đích
+    monster_pos = goal_pos
     
-    if monster_pos is None:
-        # Fallback: tìm vị trí gần goal nhưng không trùng
-        for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
-            new_x, new_y = goal_pos[0] + dx, goal_pos[1] + dy
-            if (0 <= new_x < len(game.maze) and 0 <= new_y < len(game.maze[0]) and 
-                game.maze[new_x][new_y] == 0):
-                monster_pos = (new_x, new_y)
-                break
-        
-        if monster_pos is None:
-            monster_pos = player_pos  # Last resort
+    # Kiểm tra đường đi ban đầu
+    has_initial_path, initial_distance, initial_path = validate_path_exists(game, player_pos, goal_pos)
+    if not has_initial_path:
+        print(f" Không có đường đi từ {player_pos} đến {goal_pos}!")
+        return
     
     # Khởi tạo vị trí
-    print(f"🎮 Bắt đầu: Player {player_pos}, Monster {monster_pos}, Goal {goal_pos}")
+    print(f" BFS-Minimax Start: Player {player_pos}, Monster {monster_pos}, Goal {goal_pos}")
+    print(f" Initial path distance: {initial_distance} steps")
     
     visited = set()
     step_count = 0
@@ -81,7 +128,7 @@ def run_minimax(game):
                     game.maze[new_x][new_y] == 0):
                     moves.append((new_x, new_y))
         else:
-            # Monster di chuyển tối đa 2 ô mỗi lượt về phía Player - HIỆU QUẢ HỒN
+            # Monster di chuyển tối đa 2 ô mỗi lượt về phía Player - mỗi bước 1 ô
             if not target_pos:
                 moves.append(pos)  # Đứng yên nếu không có target
                 return moves
@@ -125,22 +172,32 @@ def run_minimax(game):
             # Sắp xếp theo mức độ cải thiện (tốt nhất trước)
             move_candidates.sort(reverse=True, key=lambda x: x[0])
             
-            # Lấy các moves tốt nhất (chỉ những moves cải thiện khoảng cách)
+            # Lấy các moves tốt nhất (ưu tiên moves cải thiện khoảng cách)
             for improvement, move in move_candidates:
                 if improvement > 0:  # Chỉ lấy moves làm gần Player hơn
                     moves.append(move)
             
-            # Nếu không có move nào cải thiện, lấy move ít xấu nhất
+            # Nếu không có move nào cải thiện, lấy ALL moves để tránh kẹt
             if not moves and move_candidates:
-                moves.append(move_candidates[0][1])
+                # Thêm tất cả moves có thể, không chỉ move tốt nhất
+                for improvement, move in move_candidates[:4]:  # Lấy 4 moves tốt nhất
+                    moves.append(move)
+            
+            # Nếu vẫn không có moves, thêm basic moves
+            if not moves:
+                for dx, dy in all_dirs:
+                    new_x, new_y = x + dx, y + dy
+                    if (0 <= new_x < len(game.maze) and 0 <= new_y < len(game.maze[0]) and 
+                        game.maze[new_x][new_y] == 0):
+                        moves.append((new_x, new_y))
             
             # Loại bỏ trùng lặp và giới hạn số lượng
             moves = list(dict.fromkeys(moves))  # Giữ thứ tự và loại trùng
             if len(moves) > 6:  # Giới hạn để tránh quá nhiều options
                 moves = moves[:6]
         
-        # Tránh vòng lặp: ưu tiên moves chưa đi gần đây
-        if recent_positions and len(moves) > 1:
+        # Tránh vòng lặp: ưu tiên moves chưa đi gần đây (chỉ cho player)
+        if is_player and recent_positions and len(moves) > 1:
             # Sắp xếp moves theo mức độ "mới"
             def move_priority(move):
                 if move in recent_positions[-3:]:  # Đã đi trong 3 bước gần đây
@@ -151,6 +208,13 @@ def run_minimax(game):
                     return 0  # Ưu tiên cao (chưa đi)
             
             moves.sort(key=move_priority)
+        elif not is_player and recent_positions and len(moves) > 3:
+            # Monster chỉ tránh lặp lại nếu có nhiều hơn 3 moves
+            # Loại bỏ move vừa đi (chỉ move cuối cùng)
+            if recent_positions and len(recent_positions) > 0:
+                last_pos = recent_positions[-1]
+                if last_pos in moves and len(moves) > 1:
+                    moves.remove(last_pos)
         
         # Nếu không có nước đi nào, cho phép đứng yên
         if not moves:
@@ -159,9 +223,10 @@ def run_minimax(game):
         return moves
     
     def evaluate_state(player_pos, monster_pos, player_prev=None, monster_prev=None):
-        """Đánh giá trạng thái: Player ưu tiên goal, Monster đuổi Player"""
-        dist_to_goal = manhattan_distance(player_pos, goal_pos)
-        dist_player_monster = manhattan_distance(player_pos, monster_pos)
+        """Đánh giá trạng thái với BFS distance thực tế"""
+        # Sử dụng BFS distance thay vì Manhattan
+        real_dist_to_goal, _ = bfs_real_distance(game, player_pos, goal_pos)
+        dist_player_monster = manhattan_distance(player_pos, monster_pos)  # Monster vẫn dùng Manhattan cho tốc độ
         
         # Win/Loss conditions
         if player_pos == goal_pos:
@@ -169,18 +234,26 @@ def run_minimax(game):
         if player_pos == monster_pos:
             return -1000
         
+        # Nếu không có đường đi đến goal = penalty cực lớn
+        if real_dist_to_goal == float('inf'):
+            return -5000  # Ngõ cụt = rất tệ
+        
         score = 0
         
-        # Player siêu ưu tiên goal
-        score -= dist_to_goal * 60
+        # Player ưu tiên goal với BFS distance (chính xác hơn)
+        score -= real_dist_to_goal * 80  # Tăng weight vì BFS distance chính xác hơn
         
-        # Monster ưu tiên bắt Player
-        if dist_player_monster <= 2:
-            score -= dist_player_monster * 100
+        # Monster ưu tiên BẮT Player (trùng vị trí) - mục tiêu dừng game
+        if dist_player_monster == 0:
+            score -= 10000  # Monster đã bắt Player = thắng lớn
+        elif dist_player_monster == 1:
+            score -= 5000   # Sắp bắt được = ưu tiên cực cao
+        elif dist_player_monster <= 2:
+            score -= dist_player_monster * 200  # Tăng mạnh penalty để Monster tiến gần
         elif dist_player_monster <= 4:
-            score -= dist_player_monster * 60
+            score -= dist_player_monster * 100
         else:
-            score -= dist_player_monster * 30
+            score -= dist_player_monster * 50
         
         # Player chỉ tránh khi Monster cực kỳ gần
         if dist_player_monster <= 1:
@@ -188,15 +261,13 @@ def run_minimax(game):
         elif dist_player_monster <= 2:
             score += dist_player_monster * 60
         
-        # Luôn ưu tiên goal
-        score -= dist_to_goal * 25
-        
-        # Bonus cho movement về goal
+        # Bonus cho movement về goal (sử dụng BFS)
         if player_prev and player_pos != player_prev:
-            prev_dist_to_goal = manhattan_distance(player_prev, goal_pos)
-            if dist_to_goal < prev_dist_to_goal:
-                score += 30
-            else:
+            prev_real_dist, _ = bfs_real_distance(game, player_prev, goal_pos)
+            if prev_real_dist != float('inf') and real_dist_to_goal < prev_real_dist:
+                score += 40  # Bonus lớn hơn vì tiến bộ thực sự
+            elif real_dist_to_goal > prev_real_dist:
+                score -= 15  # Penalty khi đi xa goal
                 score -= 2
         
         # Monster movement evaluation
@@ -237,8 +308,9 @@ def run_minimax(game):
         
         for p_move in player_moves:
             for m_move in monster_moves:
-                if p_move == m_move:  # Tránh collision
-                    continue
+                # Monster BẮT Player = Monster thắng ngay lập tức
+                if p_move == m_move:
+                    return -10000, p_move, m_move  # Monster thắng = điểm rất âm cho Player
                 
                 new_player_hist = (player_hist + [player_pos]) if player_hist else [player_pos]
                 new_monster_hist = (monster_hist + [monster_pos]) if monster_hist else [monster_pos]
@@ -246,15 +318,18 @@ def run_minimax(game):
                 eval_score, _, _ = minimax_pure(p_move, m_move, depth-1, new_player_hist, new_monster_hist)
                 
                 # Evaluation adjustments
-                goal_dist_current = manhattan_distance(player_pos, goal_pos)
-                goal_dist_new = manhattan_distance(p_move, goal_pos)
+                # Sử dụng BFS distance cho player goal
+                player_goal_dist_current, _ = bfs_real_distance(game, player_pos, goal_pos)
+                player_goal_dist_new, _ = bfs_real_distance(game, p_move, goal_pos)
                 monster_dist_current = manhattan_distance(player_pos, monster_pos)
                 monster_dist_new = manhattan_distance(p_move, m_move)
                 
-                # Player goal bonus
-                if goal_dist_new < goal_dist_current:
+                # Player goal bonus (dùng BFS distance)
+                if (player_goal_dist_new != float('inf') and player_goal_dist_current != float('inf') and
+                    player_goal_dist_new < player_goal_dist_current):
                     eval_score += 15
-                elif goal_dist_new > goal_dist_current:
+                elif (player_goal_dist_new != float('inf') and player_goal_dist_current != float('inf') and
+                      player_goal_dist_new > player_goal_dist_current):
                     eval_score -= 10
                 
                 # Player avoid monster
@@ -274,24 +349,37 @@ def run_minimax(game):
                     penalty = len([pos for pos in player_hist[-3:] if pos == p_move]) * 5
                     eval_score -= penalty
                 
-                # Monster chase player
+                # Monster chase player - MỤC TIÊU BẮT PLAYER TẠI VỊ TRÍ CHÍNH XÁC
                 player_dist_current = manhattan_distance(monster_pos, player_pos)
                 player_dist_new = manhattan_distance(m_move, p_move)
-                distance_improvement = player_dist_current - player_dist_new
                 
-                if distance_improvement > 0:
-                    if player_dist_new <= 2:
-                        eval_score -= distance_improvement * 50
-                    elif player_dist_new <= 4:
-                        eval_score -= distance_improvement * 30
+                # Ưu tiên CỰC CAO nếu Monster có thể trùng vị trí với Player
+                if m_move == p_move:
+                    eval_score -= 20000  # BONUS CỰC LỚN cho việc bắt Player
+                elif player_dist_new == 0:
+                    eval_score -= 15000  # Monster đã ở vị trí Player
+                elif player_dist_new == 1:
+                    eval_score -= 8000   # Sắp bắt được Player
+                else:
+                    # Logic cải tiến cho việc tiến gần - MẠNH HƠN
+                    distance_improvement = player_dist_current - player_dist_new
+                    if distance_improvement > 0:
+                        # Monster tiến gần = reward lớn
+                        if player_dist_new <= 2:
+                            eval_score -= distance_improvement * 200  # Tăng từ 100
+                        elif player_dist_new <= 4:
+                            eval_score -= distance_improvement * 120   # Tăng từ 60
+                        elif player_dist_new <= 8:
+                            eval_score -= distance_improvement * 80    # Thêm level mới
+                        else:
+                            eval_score -= distance_improvement * 50    # Tăng từ 30
+                    elif distance_improvement < 0:
+                        # Monster đi xa = penalty lớn
+                        penalty = abs(distance_improvement) * 50      # Tăng từ 25
+                        eval_score += penalty
                     else:
-                        eval_score -= distance_improvement * 20
-                elif distance_improvement < 0:
-                    penalty = abs(distance_improvement) * 15
-                    eval_score += penalty
-                
-                if player_dist_new <= 1:
-                    eval_score -= 100
+                        # Monster đứng yên = penalty nhỏ
+                        eval_score += 5
                 
                 if monster_hist and m_move in monster_hist[-2:]:
                     eval_score += 3
@@ -332,25 +420,60 @@ def run_minimax(game):
         
         # Kiểm tra điều kiện thắng/thua
         if player_pos == goal_pos:
-            print("🎉 PLAYER THẮNG!")
+            print(" PLAYER THẮNG! BFS-Enhanced Minimax thành công!")
             game_over = True
             break
         
         if player_pos == monster_pos:
-            print("💀 GAME OVER! Monster bắt được Player!")
+            print(" GAME OVER! Monster bắt được Player!")
             game_over = True
             break
         
-        # Chạy Minimax để tìm nước đi tốt nhất
-        _, best_player_move, best_monster_move = minimax_pure(
-            player_pos, monster_pos, max_depth, 
-            player_history[-5:], monster_history[-5:]
-        )
+        # BFS VALIDATION: Kiểm tra đường đi trước mỗi lượt
+        has_path, current_distance, current_path = validate_path_exists(game, player_pos, goal_pos)
         
-        # Thực hiện nước đi
+        if not has_path:
+            print(f"  Không có đường đi từ {player_pos} đến goal! Trying to escape...")
+            # Thử tìm nước đi thoát khỏi ngõ cụt
+            escape_moves = []
+            for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
+                x, y = player_pos
+                new_pos = (x + dx, y + dy)
+                if (0 <= new_pos[0] < len(game.maze) and 
+                    0 <= new_pos[1] < len(game.maze[0]) and 
+                    game.maze[new_pos[0]][new_pos[1]] == 0):
+                    test_path, test_distance, _ = validate_path_exists(game, new_pos, goal_pos)
+                    if test_path:
+                        escape_moves.append((new_pos, test_distance))
+            
+            if escape_moves:
+                # Chọn move có đường đi ngắn nhất đến goal
+                escape_moves.sort(key=lambda x: x[1])
+                best_player_move = escape_moves[0][0]
+                print(f" Escape move: {player_pos} → {best_player_move}")
+            else:
+                print(" Bị kẹt hoàn toàn!")
+                break
+        else:
+            # Hiển thị thông tin BFS mỗi 5 moves
+            if moves_count % 5 == 0:
+                print(f"  BFS Path: distance={current_distance}, preview={current_path[:3]}...")
+            
+            # Chạy Minimax để tìm nước đi tốt nhất
+            _, best_player_move, best_monster_move = minimax_pure(
+                player_pos, monster_pos, max_depth, 
+                player_history[-5:], monster_history[-5:]
+            )
+        
+        # Thực hiện nước đi với validation
         if best_player_move and best_player_move != player_pos:
-            player_history.append(player_pos)
-            player_pos = best_player_move
+            # Kiểm tra xem move có tạo ra ngõ cụt không
+            post_move_path, post_move_distance, _ = validate_path_exists(game, best_player_move, goal_pos)
+            if post_move_path or moves_count == 0:  # Cho phép move đầu tiên
+                player_history.append(player_pos)
+                player_pos = best_player_move
+            else:
+                print(f" Skipping move {player_pos} → {best_player_move} (tạo ngõ cụt)")
         
         if best_monster_move and best_monster_move != monster_pos:
             monster_history.append(monster_pos)
@@ -360,8 +483,14 @@ def run_minimax(game):
         step_count += 1
     
     if moves_count >= max_moves:
-        print("⏰ Game timeout!")
-    
+        final_distance, _, _ = validate_path_exists(game, player_pos, goal_pos)
+        initial_distance, _, _ = validate_path_exists(game, start_pos, goal_pos)
+        if final_distance != float('inf') and initial_distance != float('inf'):
+            progress = ((initial_distance - final_distance) / initial_distance) * 100
+            print(f" Game timeout! Progress: {progress:.1f}% (BFS: {final_distance} steps from goal)")
+        else:
+            print(f"⏰ Game timeout! Position: {player_pos}")
+
     # Kết thúc
     game.is_running = False
     game.current_node = None

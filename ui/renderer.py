@@ -131,7 +131,7 @@ class Renderer:
                 "gradient": "red_yellow",
                 "text_color": BLACK,
                 "algorithms": [
-                    {"name": "Minimax (Player vs Monster)", "desc": "Đối kháng Min-Max với Alpha-Beta"},
+                    {"name": "Minimax (Player vs Monster)", "desc": "Đối kháng Min-Max "},
                     {"name": "", "desc": ""},
                     {"name": "", "desc": ""}
                 ]
