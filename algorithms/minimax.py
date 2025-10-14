@@ -1,6 +1,4 @@
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
-import pygame
-import time
 import math
 from collections import deque
 
@@ -416,7 +414,6 @@ def run_minimax(game):
         
         # Vẽ frame
         game.draw_frame()
-        time.sleep(0.5)
         
         # Kiểm tra điều kiện thắng/thua
         if player_pos == goal_pos:

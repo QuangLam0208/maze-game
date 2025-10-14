@@ -37,7 +37,6 @@ def run_and_or_search(game):
     queue = deque([root])
     visited_set = set()
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]  # Right, Down, Left, Up
-    
     step_count = 0
     solution_path = []
 

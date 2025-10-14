@@ -1,5 +1,4 @@
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame
-import pygame
 
 def run_forward_checking(game):
     """
@@ -54,7 +53,6 @@ def run_forward_checking(game):
         game.current_node = (x, y)
         
         game.draw_frame()
-        pygame.time.wait(80)
 
         # Nếu tới goal thì kết thúc
         if check_goal(game, x, y, path):
@@ -94,7 +92,7 @@ def run_forward_checking(game):
                     game.current_node = None
                     
                 game.draw_frame()
-                pygame.time.wait(50)
+                 
             return False
 
         # --- Sinh candidate moves (neighbor 4 hướng) ---
@@ -120,7 +118,7 @@ def run_forward_checking(game):
                 game.current_node = None
                 
             game.draw_frame()
-            pygame.time.wait(50)
+             
 
         # Restore domain khi backtrack
         for (var, val) in pruned:

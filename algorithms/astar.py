@@ -5,8 +5,6 @@ from .heuristic import manhattan_heuristic
 import heapq
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
-
-
 def run_astar(game):
     """Chạy thuật toán A* cho MazeGame"""
     

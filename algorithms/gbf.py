@@ -1,6 +1,4 @@
 import heapq
-import pygame
-import time
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 def manhattan_distance(pos1, pos2):
@@ -78,4 +76,3 @@ def run_gbf(game):
     algorithm_finished(game)
     
     game.draw_frame()
-    pygame.time.wait(50)

@@ -1,6 +1,3 @@
-from collections import deque
-import pygame
-import time
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 def run_partial_observable_dfs(game, vision_range=1):

@@ -1,5 +1,3 @@
-import pygame
-import time
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
 def run_dfs(game):
@@ -61,4 +59,3 @@ def run_dfs(game):
 
     # Animation khi kết thúc
     game.draw_frame()
-    pygame.time.wait(50)

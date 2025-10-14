@@ -1,6 +1,3 @@
-import heapq
-import pygame
-import time
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 from algorithms.heuristic import h_manhattan_cost
 
@@ -100,4 +97,3 @@ def run_beam(game, beam_width=3):
     algorithm_finished(game)
     
     game.draw_frame()
-    pygame.time.wait(50)

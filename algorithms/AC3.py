@@ -107,8 +107,7 @@ def run_ac3_csp(game):
         game.path = path + [(x, y)]
         game.current_node = (x, y)
         
-        game.draw_frame()
-        pygame.time.wait(80)
+        game.draw_frame()   
 
         # Kiểm tra goal
         if check_goal(game, x, y, path):
@@ -143,7 +142,7 @@ def run_ac3_csp(game):
                     game.current_node = None
                     
                 game.draw_frame()
-                pygame.time.wait(50)
+                 
             return False
 
         # Tiếp tục mở rộng neighbors
@@ -168,8 +167,7 @@ def run_ac3_csp(game):
             else:
                 game.current_node = None
                 
-            game.draw_frame()
-            pygame.time.wait(50)
+            game.draw_frame()         
 
         for (var, val) in pruned:
             domains[var].add(val)

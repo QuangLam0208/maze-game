@@ -34,7 +34,7 @@ def run_bfs(game):
         update_game_state(game, x, y, visited_set)
         
         # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
-        game.path = current_path + [(x, y)]
+        game.path = current_path + [(x, y)] 
         
         step_count += 1
 

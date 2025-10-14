@@ -1,6 +1,5 @@
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 
-
 def run_dls(game):
     """Chạy Depth-Limited Search"""
 

@@ -1,6 +1,5 @@
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
 import pygame
-import time
 
 def run_backtracking(game):
     """Chạy thuật toán Backtracking với visited tạm thời trong vòng lặp"""
@@ -51,7 +50,7 @@ def run_backtracking(game):
             
             # Vẽ frame và delay thủ công
             game.draw_frame()
-            time.sleep(0.08)
+             
             step_count = 0
             continue
         
