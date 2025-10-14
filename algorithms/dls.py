@@ -8,11 +8,16 @@ def run_dls(game):
 
     # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
     start_pos = getattr(game, 'custom_start', (0, 0))
+    end_pos = getattr(game, 'custom_end', (game.MAZE_SIZE - 1, game.MAZE_SIZE - 1))
+    
     if start_pos is None:
         start_pos = (0, 0)
+        end_pos = (game.MAZE_SIZE - 1, game.MAZE_SIZE - 1)
     start_x, start_y = start_pos
-
-    limit = game.MAZE_SIZE * game.MAZE_SIZE
+    start_row, start_col = start_pos
+    end_row, end_col = end_pos
+    # Tổng chênh lệch hàng và cột, đây là quãng đường tối thiểu
+    limit = abs(start_row - end_row) + abs(start_col - end_col)
     path = Recursive_DLS(game, start_x, start_y, [], set(), limit, 0)
     if path is not None:
         game.path = path
@@ -64,8 +69,10 @@ def Recursive_DLS(game, x, y, current_path, visited_set, limit, step_count):
         nx, ny = x + dx, y + dy
         if (0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and #không ra ngoài biên của mê cung.
             game.maze[nx][ny] == 0 and (nx, ny) not in visited_set): #ô trống và chưa đi qua trước đó
+            new_visited = visited_set.copy()
+            new_visited.add((x, y))
 
-            result = Recursive_DLS(game, nx, ny, current_path + [(x, y)], visited_set, limit - 1, step_count + 1) #Gọi đệ quy thử đi tiếp từ ô (nx, ny)
+            result = Recursive_DLS(game, nx, ny, current_path + [(x, y)], new_visited, limit - 1, step_count + 1)
             if result is not None:
                 return result
 
