@@ -1,25 +1,28 @@
-import pygame
-import time
+import heapq
 from utils.algorithm_runner import update_game_state, check_goal, handle_frame, algorithm_finished
+from .cost import DEFAULT_COST
 
-def run_dfs(game):
-    """Chạy DFS, cập nhật trạng thái của MazeGame"""
+def run_ucs(game, cost_func=DEFAULT_COST):
+    """
+    Uniform Cost Search (UCS)
+    """
 
-    game.alg_name = "Depth-First Search"
+    game.alg_name = "Uniform Cost Search"
 
     # Sử dụng custom_start nếu có và không phải None, ngược lại dùng (0, 0)
     start_pos = getattr(game, 'custom_start', (0, 0))
     if start_pos is None:
         start_pos = (0, 0)
     start_x, start_y = start_pos
-    stack = [(start_x, start_y, [])]  # Sử dụng stack thay vì queue cho DFS
-    
+
+    # Priority queue: (cost, x, y, path)
+    pq = [(0, start_x, start_y, [])]
     visited_set = set()
     directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
     step_count = 0
 
-    while stack and game.is_running:
+    while pq and game.is_running:
         result = handle_frame(game, step_count)
         if result is None:
             return
@@ -27,38 +30,31 @@ def run_dfs(game):
         if not ok:
             return
 
-        # Lấy node kế tiếp từ stack (LIFO)
-        x, y, current_path = stack.pop()
+        cost, x, y, current_path = heapq.heappop(pq)
+
         if (x, y) in visited_set:
             continue
 
-        # Cập nhật trạng thái game
         update_game_state(game, x, y, visited_set)
-       
+        
         # Cập nhật path để hiển thị nhánh đang xét bằng màu vàng
         game.path = current_path + [(x, y)]
         
         step_count += 1
 
-        # Kiểm tra đích
+        # Check goal
         if check_goal(game, x, y, current_path):
-            return
+            break
 
-        # Thêm các node kế tiếp vào stack (DFS)
+        # Expand neighbors
         for dx, dy in directions:
-            new_x, new_y = x + dx, y + dy
-            if (0 <= new_x < len(game.maze) and 
-                0 <= new_y < len(game.maze[0]) and 
-                game.maze[new_x][new_y] == 0 and 
-                (new_x, new_y) not in visited_set):
-                stack.append((new_x, new_y, current_path + [(x, y)]))
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and game.maze[nx][ny] == 0:
+                new_cost = cost + cost_func(x, y, nx, ny)
+                heapq.heappush(pq, (new_cost, nx, ny, current_path + [(x, y)]))
 
     game.is_running = False
     game.current_node = None
-
+    
     # Add to history if no path was found
     algorithm_finished(game)
-
-    # Animation khi kết thúc
-    game.draw_frame()
-    pygame.time.wait(50)
