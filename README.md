@@ -71,7 +71,8 @@ Thuật toán tìm kiếm theo chiều rộng sử dụng cấu trúc **Queue** 
 - Không gian: O(b^d)
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![BFS Demo](assets/Mazegame_GIF/Uninformed%20Search/BFS.gif)
 
 ---
 
@@ -89,7 +90,8 @@ Thuật toán tìm kiếm theo chiều sâu sử dụng cấu trúc **Stack** ho
 - Không gian: O(b·d)
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![DFS Demo](assets/Mazegame_GIF/Uninformed%20Search/DFS.gif)
 
 ---
 
@@ -117,7 +119,8 @@ Thuật toán Greedy sử dụng cấu trúc lưu trữ **Priority Queue**. Ch�
 - Nếu ước lượng sai có thể tìm ra đường đi không tối ưu
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![Greedy Demo](assets/Mazegame_GIF/Informed%20Search/Greedy.gif)
 
 ---
 
@@ -135,7 +138,8 @@ Trong đó:
 - **h(n)**: Ước lượng chi phí từ vị trí hiện tại đến kho báu (Heuristics)
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![A* Demo](assets/Mazegame_GIF/Informed%20Search/Astar.gif)
 
 ---
 
@@ -159,7 +163,8 @@ Thuật toán **Simulated Annealing (SA)** là phương pháp tìm kiếm ngẫu
 - Trong bài toán này, SA được sử dụng để tìm đường đi từ vị trí xuất phát đến kho báu trên bản đồ mê cung
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![SA Demo](assets/Mazegame_GIF/Local%20Search/SA.gif)
 
 ---
 
@@ -187,7 +192,8 @@ Fitness = √(soHang² + soCot²) - √((goalX - x)² + (goalY - y)²)
 - **Đột biến:** Phép đồng nhất với tỷ lệ **5%**
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+_Genetic Algorithm đang được phát triển_
 
 ---
 
@@ -213,7 +219,8 @@ Thuật toán **AND-OR Tree Search** là dạng mở rộng của tìm kiếm th
 - Việc di chuyển đến các ô kề là các hành động khả thi
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![AND-OR Demo](assets/Mazegame_GIF/Complex%20Environment/Nondeter.gif)
 
 ---
 
@@ -232,7 +239,8 @@ Thuật toán này có thể được sử dụng với các nhóm thuật toán
 - Tối ưu hơn thuật toán tìm kiếm trong môi trường không nhìn thấy
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![Partially Observable Demo](assets/Mazegame_GIF/Complex%20Environment/PartialObser.gif)
 
 ---
 
@@ -257,7 +265,8 @@ Thuật toán **CSP Backtracking** (Constraint Satisfaction Problem) được s�
 - Loại bỏ các đường đi không thỏa mãn trước khi tiếp tục mở rộng tìm kiếm
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![Backtracking Demo](assets/Mazegame_GIF/Constraint%20Satisfied/Backtracking.gif)
 
 ---
 
@@ -270,7 +279,8 @@ Thuật toán **AC3** có thể được coi là phiên bản tốt hơn của B
 - Làm tăng khả năng tìm thấy kho báu nhanh hơn
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![AC3 Demo](assets/Mazegame_GIF/Constraint%20Satisfied/AC3.gif)
 
 ---
 
@@ -300,7 +310,8 @@ Thuật toán **MiniMax** là kỹ thuật tìm kiếm thường được áp d�
 - **Môi trường (đối thủ) là MIN:** Khiến người chơi đi xa hơn hoặc bị kẹt
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+![Minimax Demo](assets/Mazegame_GIF/Game%20Theory/Minimax.gif)
 
 ---
 
@@ -317,7 +328,8 @@ Thuật toán **Alpha-Beta** là phiên bản tối ưu hơn của Minimax.
 - Chạy nhanh và hiệu quả hơn thuật toán Minimax
 
 **Hình ảnh (.gif) minh họa thuật toán:**
-<!-- Thêm GIF tại đây -->
+
+_Alpha-Beta Pruning đang được phát triển_
 
 ---
 
