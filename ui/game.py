@@ -597,7 +597,7 @@ class MazeGame:
         ax1.set_title("Nodes đã thăm", fontsize=12, fontweight='bold')
         ax1.set_ylabel("Số lượng nodes")
         ax1.grid(axis='y', alpha=0.3)
-        ax1.tick_params(axis='x', rotation=0) # Giữ nhãn nằm ngang
+        ax1.tick_params(axis='x', rotation=45) # Giữ nhãn nằm ngang
         
         # Thêm giá trị lên cột
         for bar in bars1:
@@ -612,7 +612,7 @@ class MazeGame:
         ax2.set_title("Thời gian thực thi", fontsize=12, fontweight='bold')
         ax2.set_ylabel("Thời gian (ms)")
         ax2.grid(axis='y', alpha=0.3)
-        ax2.tick_params(axis='x', rotation=0) # Giữ nhãn nằm ngang
+        ax2.tick_params(axis='x', rotation=45) # Giữ nhãn nằm ngang
         
         # Thêm giá trị lên cột
         for bar in bars2:
