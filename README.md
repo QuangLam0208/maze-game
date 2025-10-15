@@ -384,30 +384,14 @@ Thuật toán **MiniMax** là kỹ thuật tìm kiếm thường được áp d�
 
 ---
 
-#### **Alpha-Beta Pruning**
 
-Thuật toán **Alpha-Beta** là phiên bản tối ưu hơn của Minimax.
-
-**Cách hoạt động:**
-- Thay vì thử hết đường, Alpha-Beta chỉ chọn những đường đảm bảo ngưỡng giá trị **alpha** và **beta**
-- Nếu lối đi nào vượt quá thì thuật toán sẽ không xét
-
-**Ưu điểm:**
-- Cắt tỉa bớt các trường hợp không hợp lệ
-- Chạy nhanh và hiệu quả hơn thuật toán Minimax
-
-**Hình ảnh (.gif) minh họa thuật toán:**
-
-_Alpha-Beta Pruning đang được phát triển_
-
----
 
 #### **Bảng Đánh Giá Thuật Toán**
 
 | Thuật toán | Thời gian | Số bước đi |
 |------------|-----------|------------|
 | **Minimax** |  |  |
-| **Alpha-Beta Pruning** |  |  |
+
 
 ---
 
