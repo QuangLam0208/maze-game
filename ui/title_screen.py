@@ -46,13 +46,10 @@ def title_screen():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if start_button.collidepoint(event.pos):
-                    print("Start Game!")
+                    return "start" 
                 elif exit_button.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
 
         pygame.display.flip()
         clock.tick(60)
-
-if __name__ == "__main__":
-    title_screen()
