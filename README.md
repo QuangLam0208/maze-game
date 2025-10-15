@@ -1,5 +1,4 @@
-# MAZE - Trò Chơi Truy Tìm Kho Báu
-
+# MAZE - 
 ## Thông Tin Đồ Án
 
 **Báo Cáo Cuối Kỳ - Môn: Trí Tuệ Nhân Tạo**
@@ -36,7 +35,7 @@ Trò chơi được xây dựng nhằm mục đích **đánh giá và so sánh c
 
 ### **Environment (Môi trường)**
 - Lưu bản đồ bằng **ma trận**
-- Bao gồm: vật cản, kho báu, nhân vật tìm kiếm
+- Bao gồm: tường , start node , goal node 
 - **Loại môi trường:**
   - Môi trường có thể quan sát
   - Môi trường tĩnh
@@ -49,7 +48,7 @@ Trò chơi được xây dựng nhằm mục đích **đánh giá và so sánh c
 
 ### **Sensors (Bộ cảm biến)**
 - Vị trí xuất phát
-- Vị trí kho báu đang ở
+- Vị trí goal
 - 4 hướng di chuyển: vật cản hay ô có thể di chuyển được
 
 ---
@@ -424,4 +423,4 @@ Dưới sự hướng dẫn của: **TS. Phan Thị Huyền Trang**
 
 ---
 
-**© 2025 - MAZE - UIT AI Project**
+**© 2025 - MAZE**
