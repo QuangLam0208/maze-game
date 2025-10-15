@@ -40,9 +40,6 @@ def check_goal(game, x, y, path):
             "status": "done"
         })
 
-        if len(game.history) > 10:
-            game.history.pop()
-
         return True
     return False
 

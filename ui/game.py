@@ -337,8 +337,6 @@ class MazeGame:
                     "status": "Not Found"
                 })
 
-                if len(self.history) > 5:
-                    self.history.pop()
         else:
             print(f"⚠ Thuật toán {alg_name} chưa được cài đặt!")
             self.is_running = False
@@ -431,10 +429,6 @@ class MazeGame:
         self.current_node = None
         self.visited = set()
         self.path = []
-        
-        # Trim history to keep only last 10 entries
-        if hasattr(self, "history") and len(self.history) > 10:
-            self.history = self.history[:10]
         
         print("Đã chạy xong tất cả thuật toán trong nhóm!")
         print("Nhấn vào thuật toán con để xem kết quả của nó")
@@ -686,15 +680,18 @@ class MazeGame:
         for entry in valid_history:
             alg_name = entry["name"]
             group_name = self.get_alg_group_name(alg_name)
-            
+                
             if group_name not in best_in_group or entry["nodes"] < best_in_group[group_name]["nodes"]:
                 best_in_group[group_name] = entry
         
         # 2. Chuẩn bị dữ liệu cho đồ thị
         data = list(best_in_group.values())
         
-        # Loại bỏ nhóm "Coming Soon" và sắp xếp theo tên nhóm
-        data = [d for d in data if self.get_alg_group_name(d['name']) != "Coming Soon"]
+        if not data:
+            print("Không có dữ liệu hợp lệ để thống kê!")
+            return
+        
+        # Sắp xếp theo tên nhóm
         data.sort(key=lambda x: self.get_alg_group_name(x['name']))
 
         # Rút gọn tên nhóm cho hiển thị trên trục X
@@ -706,6 +703,7 @@ class MazeGame:
             elif name == "Local Search": short_group_names.append("Local Search")
             elif name == "Complex Environment": short_group_names.append("Complex Env.")
             elif name == "Constraint Satisfied": short_group_names.append("CSP")
+            elif name == "Game Theory": short_group_names.append("Game Theory")
             else: short_group_names.append(name)
             
         nodes = [d["nodes"] for d in data]
@@ -719,51 +717,49 @@ class MazeGame:
             except ValueError:
                 times.append(0)
 
-        # 3. Vẽ đồ thị (giống show_statistics nhưng đổi tiêu đề và label)
-        fig = plt.figure(figsize=(12, 5))
+        # 3. Vẽ đồ thị
+        fig = plt.figure(figsize=(14, 6))
 
         # Biểu đồ Nodes
         ax1 = plt.subplot(1, 2, 1)
-        bars1 = ax1.bar(short_group_names, nodes, color="skyblue", edgecolor='navy', alpha=0.7)
+        bars1 = ax1.bar(range(len(short_group_names)), nodes, color="skyblue", edgecolor='navy', alpha=0.7)
         ax1.set_title("Nodes đã thăm (Thuật toán tốt nhất mỗi nhóm)", fontsize=12, fontweight='bold')
         ax1.set_ylabel("Số lượng nodes")
         ax1.set_xlabel("Nhóm Thuật toán")
+        ax1.set_xticks(range(len(short_group_names)))
+        ax1.set_xticklabels(short_group_names, rotation=0, ha='center')
         ax1.grid(axis='y', alpha=0.3)
-        ax1.tick_params(axis='x', rotation=0) # Giữ nhãn nằm ngang
         
-        # Thêm giá trị lên cột (Tên thuật toán + Giá trị)
-        for bar, d in zip(bars1, data):
+        # Thêm giá trị lên cột
+        for i, (bar, d) in enumerate(zip(bars1, data)):
             height = bar.get_height()
-            # Lấy tên rút gọn của thuật toán cho hiển thị trên bar
-            display_name = d["name"].split(' ')[0] # Thường là tên viết tắt/ngắn gọn đầu tiên
-            ax1.text(bar.get_x() + bar.get_width()/2., height,
-                     f'{display_name}\n{int(height)}',
-                     ha='center', va='bottom', fontsize=8)
-
+            display_name = d["name"].split(' ')[0]
+            ax1.text(i, height,
+                    f'{display_name}\n{int(height)}',
+                    ha='center', va='bottom', fontsize=8)
 
         # Biểu đồ Time
         ax2 = plt.subplot(1, 2, 2)
-        bars2 = ax2.bar(short_group_names, times, color="salmon", edgecolor='darkred', alpha=0.7)
+        bars2 = ax2.bar(range(len(short_group_names)), times, color="salmon", edgecolor='darkred', alpha=0.7)
         ax2.set_title("Thời gian thực thi (Thuật toán tốt nhất mỗi nhóm)", fontsize=12, fontweight='bold')
         ax2.set_ylabel("Thời gian (ms)")
         ax2.set_xlabel("Nhóm Thuật toán")
+        ax2.set_xticks(range(len(short_group_names)))
+        ax2.set_xticklabels(short_group_names, rotation=0, ha='center')
         ax2.grid(axis='y', alpha=0.3)
-        ax2.tick_params(axis='x', rotation=0) # Giữ nhãn nằm ngang
         
-        # Thêm giá trị lên cột (Tên thuật toán + Giá trị)
-        for bar, d in zip(bars2, data):
+        # Thêm giá trị lên cột
+        for i, (bar, d) in enumerate(zip(bars2, data)):
             height = bar.get_height()
             display_name = d["name"].split(' ')[0]
-            ax2.text(bar.get_x() + bar.get_width()/2., height,
-                     f'{display_name}\n{height:.1f}',
-                     ha='center', va='bottom', fontsize=8)
-
+            ax2.text(i, height,
+                    f'{display_name}\n{height:.1f}',
+                    ha='center', va='bottom', fontsize=8)
 
         plt.suptitle("Thống kê So sánh Thuật toán Tốt nhất theo Nhóm", 
-                     fontsize=14, fontweight='bold')
+                    fontsize=14, fontweight='bold')
         
-        # Bổ sung: Điều chỉnh lề dưới để nhãn không bị chồng lấn/cắt
-        plt.subplots_adjust(bottom=0.25) 
+        plt.subplots_adjust(bottom=0.15)
         plt.tight_layout()
         
         # Lưu ra file
