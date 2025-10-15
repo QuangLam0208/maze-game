@@ -68,6 +68,7 @@ def run_gbf(game):
                 # Tính heuristic cho node mới (khoảng cách Manhattan đến đích)
                 h_cost = manhattan_distance((new_x, new_y), goal)
                 heapq.heappush(priority_queue, (h_cost, new_x, new_y, current_path + [(x, y)]))
+                game.stats["nodes_expanded"] += 1
     
     game.is_running = False
     game.current_node = None

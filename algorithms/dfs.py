@@ -50,6 +50,7 @@ def run_dfs(game):
                 game.maze[new_x][new_y] == 0 and 
                 (new_x, new_y) not in visited_set):
                 stack.append((new_x, new_y, current_path + [(x, y)]))
+                game.stats["nodes_expanded"] += 1
 
     game.is_running = False
     game.current_node = None

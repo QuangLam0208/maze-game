@@ -61,7 +61,7 @@ class MazeGame:
         self.path = []
         self.current_node = None
         self.is_running = False
-        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.stats = {"nodes_visited": 0, "nodes_expanded": 0, "path_length": 0, "time": 0}
         self.start_time = 0
         self.backtracked_nodes = set()  # Lưu các node đã backtrack
         
@@ -115,7 +115,7 @@ class MazeGame:
         self.path = []
         self.current_node = None
         self.is_running = False
-        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.stats = {"nodes_visited": 0, "nodes_expanded": 0, "path_length": 0, "time": 0}
         self.backtracked_nodes = set()
 
         # Nếu trước đó đang dùng partial-observable, xóa known_maze / visible_cells
@@ -314,6 +314,7 @@ class MazeGame:
         self.current_node = (0, 0)
         self.start_time = time.time()
         self.stats["nodes_visited"] = 0
+        self.stats["nodes_expanded"] = 0
 
         alg_name = self.get_current_algorithm_name()
         self.alg_name = alg_name   # nhớ lưu tên thuật toán
@@ -332,6 +333,7 @@ class MazeGame:
                 self.history.insert(0, {
                     "name": self.alg_name,
                     "nodes": self.stats["nodes_visited"],
+                    "expanded": self.stats.get("nodes_expanded", 0),
                     "length": 0,
                     "time": f"{elapsed_time:.0f}ms",
                     "status": "Not Found"
@@ -365,7 +367,7 @@ class MazeGame:
             self.visited = set()
             self.path = []
             self.current_node = None
-            self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+            self.stats = {"nodes_visited": 0, "nodes_expanded": 0, "path_length": 0, "time": 0}
             self.start_time = time.time()
             self.alg_name = alg_name
             
@@ -386,6 +388,7 @@ class MazeGame:
                         'visited': set(self.visited),  # Copy visited
                         'stats': {
                             'nodes_visited': self.stats["nodes_visited"],
+                            'nodes_expanded': self.stats["nodes_expanded"],
                             'path_length': len(self.path),
                             'time': elapsed_time,
                             'found_goal': found_goal
@@ -401,6 +404,7 @@ class MazeGame:
                         'visited': set(),
                         'stats': {
                             'nodes_visited': 0,
+                            'nodes_expanded': 0,
                             'path_length': 0,
                             'time': 0,
                             'found_goal': False
@@ -414,6 +418,7 @@ class MazeGame:
                     self.history.insert(0, {
                         "name": alg_name,
                         "nodes": 0,
+                        "expanded": self.stats.get("nodes_expanded", 0),
                         "length": 0,
                         "time": "0ms",
                         "status": "fail"
@@ -483,7 +488,7 @@ class MazeGame:
         self.path = []
         self.current_node = None
         self.is_running = False
-        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.stats = {"nodes_visited": 0, "nodes_expanded": 0, "path_length": 0, "time": 0}
         self.backtracked_nodes = set()
         
         # Clear group results
@@ -514,7 +519,7 @@ class MazeGame:
         self.path = []
         self.current_node = None
         self.is_running = False
-        self.stats = {"nodes_visited": 0, "path_length": 0, "time": 0}
+        self.stats = {"nodes_visited": 0, "nodes_expanded": 0, "path_length": 0, "time": 0}
         self.backtracked_nodes = set()
         
         # Clear group results

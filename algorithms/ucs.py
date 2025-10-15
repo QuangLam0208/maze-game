@@ -52,6 +52,7 @@ def run_ucs(game, cost_func=DEFAULT_COST):
             if 0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and game.maze[nx][ny] == 0:
                 new_cost = cost + cost_func(x, y, nx, ny)
                 heapq.heappush(pq, (new_cost, nx, ny, current_path + [(x, y)]))
+                game.stats["nodes_expanded"] += 1
 
     game.is_running = False
     game.current_node = None

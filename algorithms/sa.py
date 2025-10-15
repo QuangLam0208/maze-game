@@ -64,6 +64,7 @@ def run_simulated_annealing(game, initial_temp=1000, cooling_rate=0.99, heuristi
             ):
                 new_cell = (nx, ny)
                 neighbors.append((new_cell, path + [new_cell], heuristic(new_cell, goal)))
+                game.stats["nodes_expanded"] += 1
 
         # Nếu hết đường → dừng luôn
         if not neighbors:

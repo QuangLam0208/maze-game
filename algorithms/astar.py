@@ -65,6 +65,7 @@ def run_astar(game):
                     new_g = g + 1    # Chi phí g từ start tới node này
                     new_h = manhattan_heuristic(nx, ny, *goal)  # Ước lượng còn lại tới goal
                     heapq.heappush(Queue, (new_g + new_h, new_g, nx, ny, path + [(x, y)]))  # Đẩy node mới vào heap với f = g + h
+                    game.stats["nodes_expanded"] += 1
     
     game.is_running = False
     game.current_node = None

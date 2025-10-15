@@ -49,6 +49,7 @@ def run_unobservable_dfs(game):
             if 0 <= new_x < len(game.maze) and 0 <= new_y < len(game.maze[0]):
                 if (new_x, new_y) not in visited_set:
                     stack.append((new_x, new_y, path))
+                    game.stats["nodes_expanded"] += 1
 
     # Nếu stack rỗng mà chưa tới goal
     game.is_running = False

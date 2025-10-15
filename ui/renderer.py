@@ -36,7 +36,7 @@ BUTTON_SPACING = 8  # khoảng cách giữa các nút thuật toán
 BUTTON_RADIUS = 8          # độ bo góc 
 
 # --- NHÓM NÚT THUẬT TOÁN ---
-ALG_LEFT = 60   # khoảng cách trái của nhóm thuật toán với màn hình
+ALG_LEFT = 40   # khoảng cách trái của nhóm thuật toán với màn hình
 # NHÓM CHA
 GROUP_BUTTON_WIDTH = 250 # độ rộng nút
 GROUP_BUTTON_HEIGHT = 40   # độ cao nút cha
@@ -48,7 +48,7 @@ TOTAL_4ALG_HEIGHT = 4*ALG_BUTTON_HEIGHT +  3*BUTTON_SPACING # tổng độ cao n
 PARENT_CHILD_SPACING = 30 # khoảng cách giữa nhóm cha và nhóm con
 
 # --- MAZE ---
-MAZE_OFFSET_X = ALG_LEFT + GROUP_BUTTON_WIDTH + 90 
+MAZE_OFFSET_X = ALG_LEFT + GROUP_BUTTON_WIDTH + 60 
 MAZE_OFFSET_Y = 60
 MAZE_SIZE = 25
 CELL_SIZE = 24
@@ -63,10 +63,10 @@ CONTROL_SPACING = 10
 
 # --- NHÓM LEGEND, STATS & HISTORY
 LEGEND_HEIGHT = 185
-LEGEND_STAT_HIS_X = MAZE_OFFSET_X + MAZE_WIDTH + 90
+LEGEND_STAT_HIS_X = MAZE_OFFSET_X + MAZE_WIDTH + 60
 STAT_HIS_Y = MAZE_OFFSET_Y + LEGEND_HEIGHT + 10
-RIGHT_SIDE_PANEL_WIDTH = 280
-RIGHT_SIDE_PANEL_HEIGHT = MAZE_OFFSET_Y + TOTAL_GROUP_HEIGHT + PARENT_CHILD_SPACING + TOTAL_4ALG_HEIGHT - STAT_HIS_Y
+RIGHT_SIDE_PANEL_WIDTH = 370
+RIGHT_SIDE_PANEL_HEIGHT = MAZE_OFFSET_Y + TOTAL_GROUP_HEIGHT + PARENT_CHILD_SPACING + TOTAL_4ALG_HEIGHT - STAT_HIS_Y + 20
 
 GRADIENTS = {
     "purple_blue": ((147, 51, 234), (59, 130, 246)),
@@ -518,6 +518,7 @@ class Renderer:
             # Current stats
             stats_info = [
                 f"Nodes visited : {self.game.stats['nodes_visited']}",
+                f"Nodes expanded : {self.game.stats['nodes_expanded']}",
                 f"Path length : {self.game.stats['path_length']}",
                 f"Time : {self.game.stats['time']:.0f}ms",
                 f"Status : {'Running' if self.game.is_running else 'Stop'}"
@@ -529,18 +530,18 @@ class Renderer:
             
             # Đường phân cách
             pygame.draw.line(self.screen, DARK_GRAY, 
-                            (stats_x + 10, stats_y + 130), 
-                            (stats_x + 260, stats_y + 130), 2)
+                            (stats_x + 10, stats_y + 150), 
+                            (stats_x + 260, stats_y + 150), 2)
             
             #HISTORY
             history_title = self.lostvn_font.render("HISTORY", True, "#2e2f4b")
-            self.screen.blit(history_title, (stats_x + 10, stats_y + 140))
+            self.screen.blit(history_title, (stats_x + 10, stats_y + 160))
             
             if not self.game.history:
                 no_data = self.small_josef.render("No data", True, GRAY)
-                self.screen.blit(no_data, (stats_x + 15, stats_y + 180))
+                self.screen.blit(no_data, (stats_x + 15, stats_y + 200))
             else:
-                offset_y = 180
+                offset_y = 200
                 recent_history = self.game.history[:5]
 
                 for i, entry in enumerate(recent_history):
@@ -555,7 +556,7 @@ class Renderer:
 
                     # Hiển thị thông tin chi tiết
                     info_text = self.small_josef.render(
-                        f"Nodes: {entry['nodes']}   Len: {entry['length']}   Time: {entry['time']}",
+                        f"Expanded: {entry['expanded']}   Nodes: {entry['nodes']}   Len: {entry['length']}   Time: {entry['time']}",
                         True, color
                     )
                     self.screen.blit(info_text, (stats_x + 35, stats_y + offset_y + 16))

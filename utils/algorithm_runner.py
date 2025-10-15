@@ -35,6 +35,7 @@ def check_goal(game, x, y, path):
         game.history.insert(0, {
             "name": game.alg_name,
             "nodes": game.stats["nodes_visited"],
+            "expanded": game.stats.get("nodes_expanded", 0),
             "length": game.stats["path_length"],
             "time": f"{elapsed_time:.0f}ms",
             "status": "done"
@@ -64,6 +65,7 @@ def algorithm_finished(game):
         game.history.insert(0, {
             "name": game.alg_name,
             "nodes": game.stats["nodes_visited"],
+            "expanded": game.stats.get("nodes_expanded", 0),
             "length": 0,
             "time": f"{elapsed_time:.0f}ms",
             "status": "fail"

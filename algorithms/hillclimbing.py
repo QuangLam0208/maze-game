@@ -52,6 +52,7 @@ def run_hill_climbing(game, heuristic=DEFAULT_HEURISTIC):
                 game.maze[nx][ny] == 0 and (nx, ny) not in visited_set):
                 new_cell = (nx, ny)
                 neighbors.append((new_cell, path + [new_cell], heuristic(new_cell, goal)))
+                game.stats["nodes_expanded"] += 1
 
         if not neighbors:
             break

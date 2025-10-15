@@ -47,6 +47,7 @@ def run_bfs(game):
             if (0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and
                 game.maze[nx][ny] == 0 and (nx, ny) not in visited_set):
                 queue.append((nx, ny, current_path + [(x, y)]))
+                game.stats["nodes_expanded"] += 1
 
     game.is_running = False
     game.current_node = None

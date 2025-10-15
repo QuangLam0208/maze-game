@@ -68,6 +68,7 @@ def run_beam(game, beam_width=3):
                     h_cost = h_manhattan_cost((new_x, new_y), goal)
                     new_path = current_path + [(x, y)]
                     all_successors.append((h_cost, new_x, new_y, new_path))
+                    game.stats["nodes_expanded"] += 1
 
         # Nếu không có successor nào, kết thúc
         if not all_successors:

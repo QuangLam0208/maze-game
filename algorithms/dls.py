@@ -64,6 +64,8 @@ def Recursive_DLS(game, x, y, current_path, visited_set, limit, step_count):
         if (0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and #không ra ngoài biên của mê cung.
             game.maze[nx][ny] == 0 and (nx, ny) not in visited_set): #ô trống và chưa đi qua trước đó
 
+            game.stats["nodes_expanded"] += 1
+
             result = Recursive_DLS(game, nx, ny, current_path + [(x, y)], visited_set, limit - 1, step_count + 1) #Gọi đệ quy thử đi tiếp từ ô (nx, ny)
             if result is not None:
                 return result

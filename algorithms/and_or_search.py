@@ -94,6 +94,7 @@ def expand_node(game, node, directions, queue):
         if (0 <= nx < len(game.maze) and 0 <= ny < len(game.maze[0]) and 
             game.maze[nx][ny] == 0):  # Ô trống
             valid_moves.append((nx, ny))
+            game.stats["nodes_expanded"] += 1
     
     if len(valid_moves) == 0:
         # Dead end - không có đường đi
