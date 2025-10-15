@@ -194,7 +194,7 @@ Trong đó:
 
 ---
 
-### **Nhóm 3: Tìm Kiếm Local Search**
+### **Nhóm 3: Tìm Kiếm Cục Bộ**
 
 #### **Simulated Annealing**
 
