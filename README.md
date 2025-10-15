@@ -1,4 +1,4 @@
-# MAZE - 
+# MAZE GAME
 ## Thông Tin Đồ Án
 
 **Báo Cáo Cuối Kỳ - Môn: Trí Tuệ Nhân Tạo**
