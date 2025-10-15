@@ -72,7 +72,7 @@ Thuật toán tìm kiếm theo chiều rộng sử dụng cấu trúc **Queue** 
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![BFS Demo](assets/Mazegame_GIF/Uninformed%20Search/BFS.gif)
+![BFS Demo](assets/BFS.gif)
 
 ---
 
@@ -91,7 +91,47 @@ Thuật toán tìm kiếm theo chiều sâu sử dụng cấu trúc **Stack** ho
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![DFS Demo](assets/Mazegame_GIF/Uninformed%20Search/DFS.gif)
+![DFS Demo](assets/DFS.gif)
+
+---
+
+#### **Depth-Limited Search (DLS)**
+
+Thuật toán **DLS** là biến thể của DFS nhưng có giới hạn độ sâu tìm kiếm. Thuật toán chỉ duyệt đến độ sâu tối đa được định trước.
+
+**Đặc điểm:**
+- Giải quyết vấn đề duyệt vô hạn của DFS
+- Có thể không tìm thấy đường đi nếu goal nằm quá sâu
+- Tốn ít không gian hơn BFS
+- Phù hợp khi biết trước độ sâu tối ưu
+
+**Độ phức tạp:**
+- Thời gian: O(b^l) với l là depth limit
+- Không gian: O(b·l)
+
+**Hình ảnh (.gif) minh họa thuật toán:**
+
+![DLS Demo](assets/DLS.gif)
+
+---
+
+#### **Uniform Cost Search (UCS)**
+
+Thuật toán **UCS** là mở rộng của BFS, chọn node có tổng chi phí đường đi thấp nhất từ điểm xuất phát.
+
+**Đặc điểm:**
+- Sử dụng Priority Queue theo chi phí thực tế g(n)
+- Đảm bảo tìm được đường đi có chi phí thấp nhất
+- Tương đương BFS khi tất cả bước đi có chi phí bằng nhau
+- Tốn không gian nhiều hơn DFS
+
+**Độ phức tạp:**
+- Thời gian: O(b^(C*/ε)) với C* là chi phí tối ưu
+- Không gian: O(b^(C*/ε))
+
+**Hình ảnh (.gif) minh họa thuật toán:**
+
+![UCS Demo](assets/UCS.gif)
 
 ---
 
@@ -101,6 +141,8 @@ Thuật toán tìm kiếm theo chiều sâu sử dụng cấu trúc **Stack** ho
 |------------|-----------|------------|
 | **Breadth-First Search** |  |  |
 | **Depth-First Search** |  |  |
+| **Depth-Limited Search** |  |  |
+| **Uniform Cost Search** |  |  |
 
 ---
 
@@ -120,7 +162,7 @@ Thuật toán Greedy sử dụng cấu trúc lưu trữ **Priority Queue**. Ch�
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![Greedy Demo](assets/Mazegame_GIF/Informed%20Search/Greedy.gif)
+![Greedy Demo](assets/Greedy.gif)
 
 ---
 
@@ -139,7 +181,7 @@ Trong đó:
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![A* Demo](assets/Mazegame_GIF/Informed%20Search/Astar.gif)
+![A* Demo](assets/Astar.gif)
 
 ---
 
@@ -164,36 +206,51 @@ Thuật toán **Simulated Annealing (SA)** là phương pháp tìm kiếm ngẫu
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![SA Demo](assets/Mazegame_GIF/Local%20Search/SA.gif)
+![SA Demo](assets/SA.gif)
 
 ---
 
-#### **Genetic Algorithm**
+#### **Hill Climbing**
 
-Giải thuật di truyền được thực hiện qua các bước chính:
-1. **Khởi tạo quần thể**
-2. **Chọn lọc** các cá thể phù hợp
-3. **Lai ghép** các cặp cá thể
-4. **Đột biến** cá thể
+Thuật toán **Hill Climbing** là phương pháp tìm kiếm cục bộ, luôn chọn bước đi tốt nhất về phía mục tiêu.
 
-**Triển khai trong trò chơi:**
-- Quần thể có **6 cá thể**
-- Các cá thể là mảng lưu vị trí được random ngẫu nhiên hướng đi
-- Quá trình lặp: **21 lần**
+**Nguyên lý:**
+- Chỉ xem xét các trạng thái lân cận
+- Chọn neighbor có heuristic tốt nhất
+- Dừng khi không còn neighbor nào tốt hơn
+- Dễ rơi vào local optimum
 
-**Công thức Fitness:**
-```
-Fitness = √(soHang² + soCot²) - √((goalX - x)² + (goalY - y)²)
-```
-
-**Chiến thuật:**
-- **Chọn lọc:** 2 cá thể có fitness cao nhất + 1 cá thể random
-- **Lai ghép:** Phép lai đồng nhất với tỷ lệ **65%**
-- **Đột biến:** Phép đồng nhất với tỷ lệ **5%**
+**Đặc điểm:**
+- Rất nhanh và tiết kiệm bộ nhớ
+- Không đảm bảo tìm được lời giải tối ưu
+- Có thể bị mắc kẹt tại đỉnh cục bộ
+- Phù hợp với bài toán có không gian trạng thái đơn giản
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-_Genetic Algorithm đang được phát triển_
+![Hill Climbing Demo](assets/Hill%20Climbing.gif)
+
+---
+
+#### **Beam Search**
+
+Thuật toán **Beam Search** giữ lại k trạng thái tốt nhất ở mỗi mức, kết hợp ưu điểm của BFS và heuristic search.
+
+**Nguyên lý:**
+- Giới hạn số lượng node được mở rộng ở mỗi mức (beam width)
+- Chỉ giữ lại k node có heuristic tốt nhất
+- Giảm không gian lưu trữ so với BFS thông thường
+- Trade-off giữa tính tối ưu và hiệu suất
+
+**Đặc điểm:**
+- Hiệu quả về mặt không gian
+- Không đảm bảo tìm được lời giải tối ưu
+- Beam width nhỏ: nhanh nhưng có thể bỏ lỡ lời giải
+- Beam width lớn: chậm hơn nhưng tăng khả năng tìm được lời giải tốt
+
+**Hình ảnh (.gif) minh họa thuật toán:**
+
+![Beam Search Demo](assets/Beam.gif)
 
 ---
 
@@ -201,7 +258,9 @@ _Genetic Algorithm đang được phát triển_
 
 | Thuật toán | Thời gian | Số bước đi |
 |------------|-----------|------------|
+| **Hill Climbing** |  |  |
 | **Simulated Annealing** |  |  |
+| **Beam Search** |  |  |
 | **Genetic Algorithm** |  |  |
 
 ---
@@ -220,27 +279,28 @@ Thuật toán **AND-OR Tree Search** là dạng mở rộng của tìm kiếm th
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![AND-OR Demo](assets/Mazegame_GIF/Complex%20Environment/Nondeter.gif)
+![AND-OR Demo](assets/Nondeter.gif)
 
 ---
 
 #### **Tìm Kiếm Trong Môi Trường Nhìn Thấy Một Phần**
 
-Thuật toán này có thể được sử dụng với các nhóm thuật toán tìm kiếm có thông tin và không có thông tin. Trong chương trình sử dụng với thuật toán **Greedy**.
+Thuật toán tìm kiếm trong **môi trường quan sát một phần** (Partially Observable Environment), agent chỉ nhìn thấy một phần trạng thái môi trường.
 
 **Cách hoạt động:**
-- Giống như trong bản đồ kho báu biết trước được một vị trí có thể tìm đến kho báu
-- Vị trí được biết sẽ tìm đến được mục tiêu là vị trí giả sử **(1, 3)**
-- Ban đầu thuật toán xây dựng các niềm tin ban đầu dùng Greedy để tìm đường đi đến vị trí đó
-- Khi tìm thấy, thuật toán sẽ bắt đầu tìm đường đến kho báu
+- Agent chỉ quan sát được vùng lân cận
+- Xây dựng belief state dựa trên quan sát từng phần
+- Sử dụng Greedy để tìm đến vị trí trung gian đã biết trước
+- Từ vị trí đó tiếp tục tìm đến goal
 
-**Ưu điểm:**
-- Loại bỏ được các đường đi vô nghĩa
-- Tối ưu hơn thuật toán tìm kiếm trong môi trường không nhìn thấy
+**Đặc điểm:**
+- Giảm không gian tìm kiếm so với unobservable
+- Tối ưu hơn khi biết trước một số vị trí quan trọng
+- Cần cân bằng giữa exploration và exploitation
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![Partially Observable Demo](assets/Mazegame_GIF/Complex%20Environment/PartialObser.gif)
+![Partially Observable Demo](assets/PartialObser.gif)
 
 ---
 
@@ -250,6 +310,7 @@ Thuật toán này có thể được sử dụng với các nhóm thuật toán
 |------------|-----------|------------|
 | **AND-OR Tree** |  |  |
 | **Partially Observable** |  |  |
+| **Unobservable Search** |  |  |
 
 ---
 
@@ -266,21 +327,28 @@ Thuật toán **CSP Backtracking** (Constraint Satisfaction Problem) được s�
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![Backtracking Demo](assets/Mazegame_GIF/Constraint%20Satisfied/Backtracking.gif)
+![Backtracking Demo](assets/Backtracking.gif)
 
 ---
 
-#### **Arc Consistency (AC3)**
+#### **Forward Checking**
 
-Thuật toán **AC3** có thể được coi là phiên bản tốt hơn của Backtracking.
+Thuật toán **Forward Checking** là cải tiến của Backtracking, kiểm tra tính hợp lệ trước khi gán giá trị.
+
+**Nguyên lý:**
+- Sau mỗi lần gán biến, kiểm tra domain của các biến chưa gán
+- Loại bỏ các giá trị không thỏa mãn ràng buộc với biến vừa gán
+- Phát hiện sớm các nhánh không có lời giải
+- Giảm số lần backtrack so với Backtracking thuần túy
 
 **Ưu điểm:**
-- Trước khi đưa vào backtracking, thuật toán sẽ giới hạn các miền giá trị
-- Làm tăng khả năng tìm thấy kho báu nhanh hơn
+- Hiệu quả hơn Backtracking thông thường
+- Phát hiện sớm inconsistency
+- Giảm số node cần khám phá
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![AC3 Demo](assets/Mazegame_GIF/Constraint%20Satisfied/AC3.gif)
+![Forward Checking Demo](assets/Forward%20Checking.gif)
 
 ---
 
@@ -288,7 +356,8 @@ Thuật toán **AC3** có thể được coi là phiên bản tốt hơn của B
 
 | Thuật toán | Thời gian | Số bước đi |
 |------------|-----------|------------|
-| **CSP Backtracking** |  |  |
+| **Backtracking** |  |  |
+| **Forward Checking** |  |  |
 | **AC3** |  |  |
 
 ---
@@ -311,7 +380,7 @@ Thuật toán **MiniMax** là kỹ thuật tìm kiếm thường được áp d�
 
 **Hình ảnh (.gif) minh họa thuật toán:**
 
-![Minimax Demo](assets/Mazegame_GIF/Game%20Theory/Minimax.gif)
+![Minimax Demo](assets/Minimax.gif)
 
 ---
 
