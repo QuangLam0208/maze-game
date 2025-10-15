@@ -653,7 +653,7 @@ class MazeGame:
         """Tìm tên nhóm của thuật toán, bao gồm cả trường hợp tên bị viết tắt/lưu không chính xác."""
         name_map = {
             "GBF": "Greedy Best-First", 
-            "AC-3": "Arc Consistency Algorithm 3", 
+            "AC-3": "Arc Consistency 3", 
             "Unobservable": "Unobservable Search",
             "AND-OR Search": "Nondeterministic",
             "SA": "Simulated Annealing",                   
