@@ -3,7 +3,7 @@
 
 **Báo Cáo Cuối Kỳ - Môn: Trí Tuệ Nhân Tạo**
 
-**GVHD:** Phan Thị Huyền Trang
+**GVHD:** TS. Phan Thị Huyền Trang
 
 | STT | Sinh viên thực hiện | MSSV |
 |-----|---------------------|------|
