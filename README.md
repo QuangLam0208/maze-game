@@ -430,7 +430,7 @@ Thuật toán **MiniMax** là kỹ thuật tìm kiếm thường được áp d�
 
 ### **Map Graph**
 
-![Giao diện map Graph](assets/pics/maze-bg.png)
+![Giao diện map Graph](assets/map-graph-interface.png)
 
 Ma trận (Graph) này được thiết kế với cấu trúc với đường đi thoáng và nhiều đường đi khác nhau giúp việc minh họa thuật toán trở nên cực kỳ trực quan. Điều này làm nổi bật rõ ràng sự khác biệt trong chiến lược tìm kiếm.
 
@@ -549,7 +549,7 @@ Nhìn vào biểu đồ tổng hợp, ta có thể thấy rõ sự phân hóa v�
 
 ### **Map Maze**
 
-![Giao diện map Maze](assets/pics/maze-bg.png)
+![Giao diện map Maze](assets/map-maze-interface.png)
 
 Mê cung (Maze) được thiết kế với cấu trúc cổ điển, đặc trưng bởi những đường đi hẹp, quanh co và có nhiều ngõ cụt. Cấu trúc này được xây dựng nhằm tạo ra một thử thách tìm kiếm phức tạp, mô phỏng các bài toán thực tế nơi có nhiều "bẫy" và các lựa chọn sai lầm. Thuật toán có thể dễ dàng bị "lạc" vào một nhánh dài không có lối thoát, qua đó cho thấy sự lãng phí tài nguyên và sự cần thiết của việc quay lui (backtracking) hiệu quả.
 
